@@ -29,7 +29,6 @@ class Constants(BaseConstants):
     super_game_duration = [int(s) for s in super_game_duration]
     #TODO: seems that delta in the last line could not be recognized by python or otree?
 
-
     # List of starting round for each super game
     super_games_start_round = [1]
     start_round = 1
@@ -59,7 +58,7 @@ class Constants(BaseConstants):
 
 
 class Subsession(BaseSubsession):
-    pass
+    curr_super_game = models.IntegerField(initial=0)
 
 
 class Group(BaseGroup):
@@ -67,7 +66,7 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    pair_id = models.IntegerField(initial=0)
+    pair_id = models.IntegerField()
     decision = models.StringField(
         choices=['Action 1', 'Action 2'],
         label="""This player's decision""",
@@ -78,7 +77,7 @@ class Player(BasePlayer):
 # FUNCTIONS
 def creating_session(subsession: Subsession):
     # Importing modules needed
-    from random import randint, shuffle
+    from random import randint, shuffle, choices
     # Get Constants attributes once for all
     const = Constants
 
@@ -88,6 +87,34 @@ def creating_session(subsession: Subsession):
     # Set pairs IDs to identify who is matched with whom
     pair_ids = [n for n in range(1, const.super_group_size // const.group_size + 1)] * const.group_size
     # print('pair ids:', pair_ids)
+
+    if subsession.round_number == 1:
+        from itertools import accumulate
+
+        super_games_duration = list()
+        for s in range(const.num_super_games):
+            n = 0
+            while True:
+                n += 1
+                next_round = choices([True, False], weights=[const.delta, 1 - const.delta])
+                if not next_round:
+                    break
+            super_games_duration.append(n)
+
+        subsession.session.vars['super_games_duration'] = super_games_duration
+        subsession.session.vars['super_games_end_rounds'] = accumulate(super_games_duration)
+
+        subsession.curr_super_game = 1
+
+        num_rounds_tot = sum(super_games_duration)
+        if num_rounds_tot > const.num_rounds:
+            raise ValueError('Oooops, super games are longer than the num_rounds in Constants')
+
+    else:
+        curr_round = subsession.round_number
+        for i, end in enumerate(subsession.session.vars['super_games_end_rounds']):
+            if curr_round <= end:
+                subsession.curr_super_game = i + 1
 
     # If the current round is the first round of a super game, then set the supergroups
     if subsession.round_number in const.super_games_start_round:
