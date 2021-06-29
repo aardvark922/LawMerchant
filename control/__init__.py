@@ -16,10 +16,17 @@ class Constants(BaseConstants):
     num_super_games = 5
     delta = 0.90  # discount factor equals to 0.90
 
+    time_limit = 60 * 20
+    time_limit_seconds = 60 * 20
+
+    last_rounds = [10, 40, 70]
+    last_round = 70
+
     # generate a list of supergame lengths
     #TODO: can I implement the following without using numpy?
     #TODO: how to implement block random termination?
     super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
+    super_game_duration = [int(s) for s in super_game_duration]
     #TODO: seems that delta in the last line could not be recognized by python or otree?
 
 
@@ -32,7 +39,7 @@ class Constants(BaseConstants):
         # print('start round:',start_round)
         super_games_start_round = super_games_start_round + [start_round]
         # print('super game start round:',super_games_start_round)
-    num_rounds = np.sum(super_game_duration)
+    num_rounds = sum(super_game_duration)
     print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
     print(num_rounds)
 
@@ -130,7 +137,7 @@ def other_player(player: Player):
     #get opponent player, first find other players in the same group(with pair id 0,1,2,3)
     #then get other player with same pair id
     #pair_id = player.pair_id #get player id for current player
-    print('other players in group:', player.get_others_in_group())
+    # print('other players in group:', player.get_others_in_group())
     # get other players with same pair ID in the same supergroup
     #return player.get_others_in_group()[player.pair_id == pair_id]
     #return player.get_others_in_group()[0]
@@ -212,7 +219,7 @@ class Results(Page):
     @staticmethod
     def vars_for_template(player:Player):
         me = player
-        opponent = player.other_player() #TODO: How do I get the other player
+        opponent = other_player(player) #TODO: How do I get the other player
         return {
             'my_decision': me.decision,
             'opponent_decision': opponent.decision,
@@ -238,14 +245,14 @@ class EndRound(Page):
     @staticmethod
     def after_all_players_arrive(group:Group):
         elapsed_time = time.time() - group.session.vars['start_time']
-        if Constants.time_limit == True and elapsed_time > Constants.time_limit_seconds and group.subsession.round_number in Constants.last_rounds:
+        if Constants.time_limit is True and elapsed_time > Constants.time_limit_seconds and group.subsession.round_number in Constants.last_rounds:
             group.session.vars['alive'] = False
 
 
 class End(Page):
     @staticmethod
     def is_displayed(player:Player):
-        return player.session.vars['alive'] == False or player.subsession.round_number == Constants.last_round
+        return player.session.vars['alive'] is False or player.subsession.round_number == Constants.last_round
 
 
 page_sequence = [
