@@ -25,22 +25,20 @@ class Constants(BaseConstants):
     # generate a list of supergame lengths
     #TODO: can I implement the following without using numpy?
     #TODO: how to implement block random termination?
-    super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
-    super_game_duration = [int(s) for s in super_game_duration]
+    # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
+    # super_game_duration = [int(s) for s in super_game_duration]
     #TODO: seems that delta in the last line could not be recognized by python or otree?
 
     # List of starting round for each super game
-    super_games_start_round = [1]
-    start_round = 1
-    for s in super_game_duration[:-1]:
-        # only need to use first four lengths to calculate start round
-        start_round = start_round + s
-        # print('start round:',start_round)
-        super_games_start_round = super_games_start_round + [start_round]
-        # print('super game start round:',super_games_start_round)
-    num_rounds = sum(super_game_duration)
-    print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-    print(num_rounds)
+    # super_games_start_round = [1]
+    # start_round = 1
+    # for s in super_game_duration[:-1]:
+    #     # only need to use first four lengths to calculate start round
+    #     start_round = start_round + s
+    #     # print('start round:',start_round)
+    #     super_games_start_round = super_games_start_round + [start_round]
+    #     # print('super game start round:',super_games_start_round)
+    num_rounds = 100 #  sum(super_game_duration)
 
     # Nested groups parameters
     super_group_size = 7
@@ -66,7 +64,7 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    pair_id = models.IntegerField()
+    pair_id = models.IntegerField(initial=0)
     decision = models.StringField(
         choices=['Action 1', 'Action 2'],
         label="""This player's decision""",
@@ -81,9 +79,6 @@ def creating_session(subsession: Subsession):
     # Get Constants attributes once for all
     const = Constants
 
-    # print('######################')
-    # print('super game start round:',super_games_start_round)
-
     # Set pairs IDs to identify who is matched with whom
     pair_ids = [n for n in range(1, const.super_group_size // const.group_size + 1)] * const.group_size
     # print('pair ids:', pair_ids)
@@ -96,13 +91,14 @@ def creating_session(subsession: Subsession):
             n = 0
             while True:
                 n += 1
-                next_round = choices([True, False], weights=[const.delta, 1 - const.delta])
+                next_round = choices([True, False], weights=[const.delta, 1 - const.delta], k=1)[0]
                 if not next_round:
                     break
             super_games_duration.append(n)
 
         subsession.session.vars['super_games_duration'] = super_games_duration
-        subsession.session.vars['super_games_end_rounds'] = accumulate(super_games_duration)
+        subsession.session.vars['super_games_end_rounds'] = list(accumulate(super_games_duration))
+        subsession.session.vars['super_games_start_rounds'] = [1] + [r + 1 for r in subsession.session.vars['super_games_end_rounds'][1:]]
 
         subsession.curr_super_game = 1
 
@@ -117,7 +113,7 @@ def creating_session(subsession: Subsession):
                 subsession.curr_super_game = i + 1
 
     # If the current round is the first round of a super game, then set the supergroups
-    if subsession.round_number in const.super_games_start_round:
+    if subsession.round_number in subsession.session.vars['super_games_start_rounds']:
         # Get all players in the session and in the current round
         ps = subsession.get_players()
         # Apply in-place permutation
@@ -149,6 +145,11 @@ def set_pairs(subsession: Subsession, pair_ids: list, obersever_num: int):
         shuffle(pair_ids)
         for n, p in enumerate(players[:len(players) - obersever_num]):
             p.pair_id = pair_ids[n]
+
+
+def get_supergroup_previous_others(player: Player):
+    supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
+    return [other.in_rounds(supergame_first_round, player.round_number) for other in player.get_others_in_group()]
 
 
 # Record which super game players are currently in
@@ -190,12 +191,26 @@ def set_payoff(player: Player):
 class Introduction(Page):
     timeout_seconds = 100
 
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id == 0:
+            others = get_supergroup_previous_others(player)
+            print(others)
+        return dict()
+
 
 class Instructions1(Page):
     #instruction will be shown to players before they start the game
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number == 1
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id == 0:
+            others = get_supergroup_previous_others(player)
+            print(others)
+        return dict()
 
 
 class Instructions2(Page):
