@@ -24,16 +24,16 @@ class Constants(BaseConstants):
     last_round = 70
 
     # generate a list of supergame lengths
-<<<<<<< HEAD
+
     # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
     # super_game_duration = [int(s) for s in super_game_duration]
-=======
+
     #TODO: can I implement the following without using numpy?
     #TODO: how to implement block random termination?
     # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
     # super_game_duration = [int(s) for s in super_game_duration]
     #TODO: seems that delta in the last line could not be recognized by python or otree?
->>>>>>> 76f2fc82ca43c03c43359a205234374fea2549a3
+
 
     # List of starting round for each super game
     # super_games_start_round = [1]
@@ -107,22 +107,22 @@ def creating_session(subsession: Subsession):
         subsession.session.vars['super_games_end_rounds'] = list(accumulate(super_games_duration))
         subsession.session.vars['super_games_start_rounds'] = [1] + [r + 1 for r in subsession.session.vars['super_games_end_rounds'][1:]]
 
-        subsession.curr_super_game = 1
 
         num_rounds_tot = sum(super_games_duration)
         if num_rounds_tot > const.num_rounds:
             raise ValueError('Oooops, super games are longer than the num_rounds in Constants')
 
-    else:
-        curr_round = subsession.round_number
-        for i, end in enumerate(subsession.session.vars['super_games_end_rounds']):
-            print('#####################')
-            print('current supergame:',i)
-            print('current round number:', curr_round )
-            print('current supergame ends at round:',end)
-            if curr_round > end:
-                subsession.curr_super_game = i + 1
-                print('current supergame after if loop',subsession.curr_super_game)
+    curr_round = subsession.round_number
+    for i, start in enumerate(subsession.session.vars['super_games_start_rounds']):
+        print('#####################')
+        print('current supergame:',i)
+        print('current round number:', curr_round )
+        print('current supergame starts at round:',start)
+        if curr_round == start:
+            subsession.curr_super_game = i + 1
+            print('current supergame after if loop',subsession.curr_super_game)
+        else:
+            subsession.curr_super_game = subsession.in_round(curr_round-1).curr_super_game
 
     # If the current round is the first round of a super game, then set the supergroups
     if subsession.round_number in subsession.session.vars['super_games_start_rounds']:
@@ -163,9 +163,9 @@ def get_supergroup_previous_others(player: Player):
     supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
     return [other.in_rounds(supergame_first_round, player.round_number) for other in player.get_others_in_group()]
 
-<<<<<<< HEAD
+
 # Get opponent player id
-=======
+
 def get_supergroup_previous_others(player: Player):
     supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
     return [other.in_rounds(supergame_first_round, player.round_number) for other in player.get_others_in_group()]
@@ -179,7 +179,7 @@ def get_supergroup_previous_others(player: Player):
 #         group.current_super_game=group.current_super_game+1
 
 #Get opponent player id
->>>>>>> 76f2fc82ca43c03c43359a205234374fea2549a3
+
 def other_player(player: Player):
     if player.pair_id !=0:
         return [p for p in player.get_others_in_group() if p.pair_id == player.pair_id][0]
@@ -221,21 +221,20 @@ def set_payoff(player: Player):
 class Introduction(Page):
     timeout_seconds = 100
 
-<<<<<<< HEAD
     # @staticmethod
     # def vars_for_template(player: Player):
     #     if player.pair_id == 0:
     #         others = get_supergroup_previous_others(player)
     #         print(others)
     #     return dict()
-=======
+
     @staticmethod
     def vars_for_template(player: Player):
         if player.pair_id == 0:
             others = get_supergroup_previous_others(player)
             print(others)
         return dict()
->>>>>>> 76f2fc82ca43c03c43359a205234374fea2549a3
+
 
 
 class Instructions1(Page):
