@@ -6,6 +6,22 @@ SESSION_CONFIGS = [
          app_sequence=['control'],
          num_demo_participants=14,
      ),
+
+    dict(
+        name='Prisoner_Dilemma',
+        app_sequence=['Prisoner_Dilemma'],
+        num_demo_participants=2,
+    ),
+    dict(
+        name='history_table',
+        app_sequence=['history_table'],
+        num_demo_participants=1,
+    ),
+    dict(
+        name='show_other_players_payoffs',
+        app_sequence=['show_other_players_payoffs'],
+        num_demo_participants=4,
+    ),
     # dict(
     #     name='public_goods',
     #     app_sequence=['public_goods', 'payment_info'],
