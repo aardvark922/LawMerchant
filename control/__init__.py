@@ -24,8 +24,16 @@ class Constants(BaseConstants):
     last_round = 70
 
     # generate a list of supergame lengths
+<<<<<<< HEAD
     # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
     # super_game_duration = [int(s) for s in super_game_duration]
+=======
+    #TODO: can I implement the following without using numpy?
+    #TODO: how to implement block random termination?
+    # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
+    # super_game_duration = [int(s) for s in super_game_duration]
+    #TODO: seems that delta in the last line could not be recognized by python or otree?
+>>>>>>> 76f2fc82ca43c03c43359a205234374fea2549a3
 
     # List of starting round for each super game
     # super_games_start_round = [1]
@@ -155,7 +163,23 @@ def get_supergroup_previous_others(player: Player):
     supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
     return [other.in_rounds(supergame_first_round, player.round_number) for other in player.get_others_in_group()]
 
+<<<<<<< HEAD
 # Get opponent player id
+=======
+def get_supergroup_previous_others(player: Player):
+    supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
+    return [other.in_rounds(supergame_first_round, player.round_number) for other in player.get_others_in_group()]
+
+
+# Record which super game players are currently in
+# def get_progress(subsession:Subsession,group:Group):
+#     # Get Constants attributes once for all
+#     const = Constants
+#     if subsession.round_number in const.super_games_start_round:
+#         group.current_super_game=group.current_super_game+1
+
+#Get opponent player id
+>>>>>>> 76f2fc82ca43c03c43359a205234374fea2549a3
 def other_player(player: Player):
     if player.pair_id !=0:
         return [p for p in player.get_others_in_group() if p.pair_id == player.pair_id][0]
@@ -197,12 +221,21 @@ def set_payoff(player: Player):
 class Introduction(Page):
     timeout_seconds = 100
 
+<<<<<<< HEAD
     # @staticmethod
     # def vars_for_template(player: Player):
     #     if player.pair_id == 0:
     #         others = get_supergroup_previous_others(player)
     #         print(others)
     #     return dict()
+=======
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id == 0:
+            others = get_supergroup_previous_others(player)
+            print(others)
+        return dict()
+>>>>>>> 76f2fc82ca43c03c43359a205234374fea2549a3
 
 
 class Instructions1(Page):
