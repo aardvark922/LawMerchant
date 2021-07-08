@@ -280,8 +280,9 @@ class Decision(Page):
 class ResultsWaitPage(WaitPage):
     after_all_players_arrive = set_payoffs
 
+
 # Show observer what active players did in the last round
-class Observer_Results(Page):
+class ObserverResults(Page):
     @staticmethod
     def is_displayed(player: Player):
         return player.pair_id == 0
@@ -290,8 +291,9 @@ class Observer_Results(Page):
     def vars_for_template(player: Player):
         pass
 
+
 # Show observer the history of decisions all 6 active players have chosen
-class Observer_History(Page):
+class ObserverHistory(Page):
     @staticmethod
     def is_displayed(player: Player):
         return player.pair_id == 0
@@ -300,6 +302,7 @@ class Observer_History(Page):
     def vars_for_template(player: Player):
         if player.pair_id == 0:
             return dict(active_players_in_all_rounds=get_supergroup_previous_others(player))
+
 
 class Results(Page):
     @staticmethod
