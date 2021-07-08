@@ -1,9 +1,36 @@
 {{ block title }}
-    Page title
+Your choice
 {{ endblock }}
 {{ block content }}
 
-    {{ formfields }}
-    {{ next_button }}
+<div class="form-group required">
+    <table class="table table-bordered text-center" style="width: auto; margin: auto">
+        <tr>
+            <th colspan="2" rowspan="2"></th>
+            <th colspan="2">The Other Participant</th>
+        </tr>
+        <tr>
+            <th>Action Y</th>
+            <th>Action Z</th>
+        </tr>
+        <tr>
+            <th rowspan="2"><span>You</span></th>
+            <td>
+                <button name="decision" value="Action Y" class="btn btn-primary btn-large">I will choose Action Y
+                </button>
+            </td>
+            <td>{{Constants.both_cooperate_payoff}}, {{Constants.both_cooperate_payoff}}</td>
+            <td>{{ Constants.betrayed_payoff }}, {{Constants.betray_payoff}}</td>
+        </tr>
+        <tr>
+            <td>
+                <button name="decision" value="Action Z" class="btn btn-primary btn-large">I will choose Action Z</button>
+            </td>
+            <td>{{Constants.betray_payoff}}, {{ Constants.betrayed_payoff }}</td>
+            <td>{{Constants.both_defect_payoff}}, {{Constants.both_defect_payoff}}</td>
+        </tr>
+    </table>
+</div>
+{{ next_button }}
 
 {{ endblock }}

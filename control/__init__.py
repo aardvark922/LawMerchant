@@ -12,6 +12,7 @@ This is an indefinitely repeated Prisoner's Dilemma with random rematching every
 
 class Constants(BaseConstants):
     name_in_url = 'MWR_control'
+    instructions_template = 'control/instructions.html'
     players_per_group = None
     num_super_games = 5
     delta = 0.90  # discount factor equals to 0.90
@@ -23,11 +24,16 @@ class Constants(BaseConstants):
     last_round = 70
 
     # generate a list of supergame lengths
+
+    # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
+    # super_game_duration = [int(s) for s in super_game_duration]
+
     #TODO: can I implement the following without using numpy?
     #TODO: how to implement block random termination?
     # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
     # super_game_duration = [int(s) for s in super_game_duration]
     #TODO: seems that delta in the last line could not be recognized by python or otree?
+
 
     # List of starting round for each super game
     # super_games_start_round = [1]
@@ -42,17 +48,17 @@ class Constants(BaseConstants):
 
     # Nested groups parameters
     super_group_size = 7
-    obersever_num = 1
+    observer_num = 1
     group_size = 2
 
     # parameters for PD matrix
     # payoff if 1 player defects and the other cooperates""",
-    betray_payoff = 30
-    betrayed_payoff = 5
+    betray_payoff = cu(30)
+    betrayed_payoff = cu(5)
 
     # payoff if both players cooperate or both defect
-    both_cooperate_payoff = 25
-    both_defect_payoff = 10
+    both_cooperate_payoff = cu(25)
+    both_defect_payoff = cu(10)
 
 
 class Subsession(BaseSubsession):
@@ -66,7 +72,8 @@ class Group(BaseGroup):
 class Player(BasePlayer):
     pair_id = models.IntegerField(initial=0)
     decision = models.StringField(
-        choices=['Action 1', 'Action 2'],
+        initial='NA',
+        choices=[['Action Y', 'Action Y'], ['Action Z', 'Action Z']],
         label="""This player's decision""",
         widget=widgets.RadioSelect
     )
@@ -100,17 +107,18 @@ def creating_session(subsession: Subsession):
         subsession.session.vars['super_games_end_rounds'] = list(accumulate(super_games_duration))
         subsession.session.vars['super_games_start_rounds'] = [1] + [r + 1 for r in subsession.session.vars['super_games_end_rounds'][1:]]
 
-        subsession.curr_super_game = 1
-
         num_rounds_tot = sum(super_games_duration)
         if num_rounds_tot > const.num_rounds:
             raise ValueError('Oooops, super games are longer than the num_rounds in Constants')
 
-    else:
-        curr_round = subsession.round_number
-        for i, end in enumerate(subsession.session.vars['super_games_end_rounds']):
-            if curr_round <= end:
-                subsession.curr_super_game = i + 1
+    curr_round = subsession.round_number
+    for i, start in enumerate(subsession.session.vars['super_games_start_rounds']):
+        if curr_round == start:
+            subsession.curr_super_game = i + 1
+            break
+        else:
+            print(curr_round)
+            subsession.curr_super_game = subsession.in_round(curr_round-1).curr_super_game
 
     # If the current round is the first round of a super game, then set the supergroups
     if subsession.round_number in subsession.session.vars['super_games_start_rounds']:
@@ -125,31 +133,42 @@ def creating_session(subsession: Subsession):
         # Set group matrix in oTree based on the supergroups
         subsession.set_group_matrix(super_groups)
         # Call the set_pairs function
-        set_pairs(subsession, pair_ids, const.obersever_num)
+        set_pairs(subsession, pair_ids, const.observer_num)
 
     # If the current round is not the first round of a super game, then just set new pairs
     else:
         # Set group matrix in oTree based on the matrix of the previous round
         subsession.group_like_round(subsession.round_number - 1)
         # Call the set_pairs function
-        set_pairs(subsession, pair_ids, const.obersever_num)
+        set_pairs(subsession, pair_ids, const.observer_num)
 
 
 # Within each supergroup, randomly assign a paird ID, excluding the last player who will be an observer
-def set_pairs(subsession: Subsession, pair_ids: list, obersever_num: int):
+def set_pairs(subsession: Subsession, pair_ids: list, observer_num: int):
     from random import shuffle
     # Get the supergroups for this round
     super_groups = subsession.get_groups()
     for g in super_groups:
         players = g.get_players()
         shuffle(pair_ids)
-        for n, p in enumerate(players[:len(players) - obersever_num]):
+        for n, p in enumerate(players[:len(players) - observer_num]):
             p.pair_id = pair_ids[n]
 
-
+# Get opponent player id
 def get_supergroup_previous_others(player: Player):
     supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
     return [other.in_rounds(supergame_first_round, player.round_number) for other in player.get_others_in_group()]
+
+
+def get_supergroup_round_results(player: Player):
+    others = player.get_others_in_group()
+    round_results = []
+    for o in others:
+        partner = other_player(o)
+        result = dict(id=o.id_in_group, decision=o.decision, payoff=o.payoff, partner_id=partner.id_in_group,
+                      partner_decision=partner.decision, partner_payoff=partner.payoff)
+        round_results.append(result)
+    return round_results
 
 
 # Record which super game players are currently in
@@ -160,36 +179,48 @@ def get_supergroup_previous_others(player: Player):
 #         group.current_super_game=group.current_super_game+1
 
 #Get opponent player id
+
 def other_player(player: Player):
-    return [p for p in player.get_others_in_group() if p.pair_id== player.pair_id][0]
-    #get opponent player, first find other players in the same group(with pair id 0,1,2,3)
-    #then get other player with same pair id
-    #pair_id = player.pair_id #get player id for current player
-    # print('other players in group:', player.get_others_in_group())
-    # get other players with same pair ID in the same supergroup
-    #return player.get_others_in_group()[player.pair_id == pair_id]
-    #return player.get_others_in_group()[0]
-#set payoff
+    if player.pair_id !=0:
+        return [p for p in player.get_others_in_group() if p.pair_id == player.pair_id][0]
+
+
+# Set payoffs
+def set_payoffs(group: Group):
+    for p in group.get_players():
+            set_payoff(p)
+
 def set_payoff(player: Player):
     payoff_matrix = {
-        'Action 1':
+        'Action Y':
             {
-                'Action 1': Constants.both_cooperate_payoff,
-                'Action 2': Constants.betrayed_payoff
+                'Action Y': Constants.both_cooperate_payoff,
+                'Action Z': Constants.betrayed_payoff
             },
-        'Action 2':
+        'Action Z':
             {
-                'Action 1': Constants.betray_payoff,
-                'Action 2': Constants.both_defect_payoff
+                'Action Y': Constants.betray_payoff,
+                'Action Z': Constants.both_defect_payoff
             }
     }
-    #TODO: is this one correct? [other_player(player).decision]
-    player.payoff = payoff_matrix[player.decision][other_player(player).decision]
+    for p in player.group.get_players():
+        if p.pair_id != 0:
+            p.payoff = payoff_matrix[p.decision][other_player(p).decision]
+        else:
+            p.payoff = cu(17.5)
+
 
 
 # PAGES
 class Introduction(Page):
     timeout_seconds = 100
+
+    # @staticmethod
+    # def vars_for_template(player: Player):
+    #     if player.pair_id == 0:
+    #         others = get_supergroup_previous_others(player)
+    #         print(others)
+    #     return dict()
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -197,6 +228,7 @@ class Introduction(Page):
             others = get_supergroup_previous_others(player)
             print(others)
         return dict()
+
 
 
 class Instructions1(Page):
@@ -244,52 +276,53 @@ class Decision(Page):
     def is_displayed(player: Player):
         return player.pair_id != 0
 
-#Only show to observer the past history of all players in the same group
-class Observe(Page):
+
+class ResultsWaitPage(WaitPage):
+    after_all_players_arrive = set_payoffs
+
+# Show observer what active players did in the last round
+class Observer_Results(Page):
     @staticmethod
     def is_displayed(player: Player):
         return player.pair_id == 0
 
-class ResultsWaitPage(WaitPage):
     @staticmethod
-    def after_all_players_arrive(group: Group):
-        for p in group.get_players():
-            p.set_payoff()
+    def vars_for_template(player: Player):
+        pass
 
+# Show observer the history of decisions all 6 active players have chosen
+class Observer_History(Page):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id == 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id == 0:
+            return dict(active_players_in_all_rounds=get_supergroup_previous_others(player))
 
 class Results(Page):
     @staticmethod
-    def vars_for_template(player:Player):
+    def is_displayed(player: Player):
+        return player.pair_id != 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
         me = player
         opponent = other_player(player) #TODO: How do I get the other player
         return {
             'my_decision': me.decision,
             'opponent_decision': opponent.decision,
             'same_choice': me.decision == opponent.decision,
-            'both_cooperate': me.decision == "Action 1" and opponent.decision == "Action 1",
-            'both_defect': me.decision == "Action 2" and opponent.decision == "Action 2",
-            'i_cooperate_he_defects': me.decision == "Action 1" and opponent.decision == "Action 2",
-            'i_defect_he_cooperates': me.decision == "Action 2" and opponent.decision == "Action 1",
+            'both_cooperate': me.decision == "Action Y" and opponent.decision == "Action Y",
+            'both_defect': me.decision == "Action Z" and opponent.decision == "Action Z",
+            'i_cooperate_he_defects': me.decision == "Action Y" and opponent.decision == "Action Z",
+            'i_defect_he_cooperates': me.decision == "Action Z" and opponent.decision == "Action Y",
         }
 
 
 class EndRound(Page):
-    timeout_seconds = 100
-    @staticmethod
-    def vars_for_template(player:Player):
-        continuation_chance = int(round(Constants.delta * 100))
-        if player.subsession.round_number in Constants.last_rounds:
-            dieroll = random.randint(continuation_chance + 1, 100)
-        else:
-            dieroll = random.randint(1, continuation_chance)
-        return dict(dieroll=dieroll, continuation_chance=continuation_chance,
-                    die_threshold_plus_one=continuation_chance + 1, )
-    @staticmethod
-    def after_all_players_arrive(group:Group):
-        elapsed_time = time.time() - group.session.vars['start_time']
-        if Constants.time_limit is True and elapsed_time > Constants.time_limit_seconds and group.subsession.round_number in Constants.last_rounds:
-            group.session.vars['alive'] = False
-
+    pass
 
 class End(Page):
     @staticmethod
@@ -303,8 +336,10 @@ page_sequence = [
     Instructions2,
     Instructions3,
     Decision,
-    # ResultsWaitPage,
-    # Results,
+    ResultsWaitPage,
+    Results,
+    # Observer_Results,
+    Observer_History,
     # EndRound,
     # End
 ]

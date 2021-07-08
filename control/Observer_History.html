@@ -1,0 +1,27 @@
+
+
+{{ block title }}
+History
+{{ endblock }}
+{{ block content }}
+
+<table class="table">
+    <tr>
+        <th>Group ID</th>
+        <th>Round</th>
+        <th>Decision</th>
+    </tr>
+    {{ for g in active_players_in_all_rounds }}
+    {{ for p in g}}
+    <tr>
+        <td>{{ p.id_in_group }}</td>
+        <td>{{ p.round_number }}</td>
+        <td>{{ p.decision }}</td>
+    </tr>
+    {{ endfor }}
+    {{ endfor }}
+</table>
+
+{{ next_button }}
+
+{{ endblock }}
