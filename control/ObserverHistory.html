@@ -1,25 +1,39 @@
-
-
 {{ block title }}
 History
 {{ endblock }}
 {{ block content }}
-
+<p>Below is the history table of active participants in your set </p>
 <table class="table">
+
     <tr>
         <th>Group ID</th>
-        <th>Round</th>
-        <th>Decision</th>
+        {{ for g in active_players_in_all_rounds }}
+        {{ for p in g}}
+        {{if p.id_in_group == 1}}
+        <th>Round {{ p.round_number }}</th>
+                {{ endif }}
+        {{ endfor }}
+        {{ endfor }}
     </tr>
+
+
     {{ for g in active_players_in_all_rounds }}
-    {{ for p in g}}
     <tr>
-        <td>{{ p.id_in_group }}</td>
-        <td>{{ p.round_number }}</td>
-        <td>{{ p.decision }}</td>
+
+        {{ for p in g}}
+            {{ if p.round_number == 1}}
+            <th>
+            {{ p.id_in_group }}
+            </th>
+            {{ endif }}
+        <td>
+            {{ p.decision }}
+        </td>
+        {{ endfor }}
     </tr>
     {{ endfor }}
-    {{ endfor }}
+
+
 </table>
 
 {{ next_button }}

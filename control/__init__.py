@@ -289,8 +289,9 @@ class ObserverResults(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        pass
-
+        if player.pair_id == 0:
+            # print(get_supergroup_round_results(player))
+            return dict(active_players_round_results=get_supergroup_round_results(player))
 
 # Show observer the history of decisions all 6 active players have chosen
 class ObserverHistory(Page):
@@ -325,7 +326,24 @@ class Results(Page):
 
 
 class EndRound(Page):
-    pass
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id != 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id != 0:
+            continuation_chance = int(round(Constants.delta * 100))
+            if self.subsession.round_number in Constants.last_rounds:
+                #TODO: get subsession variable
+                dieroll = random.randint(continuation_chance + 1, 100)
+            else:
+                dieroll = random.randint(1, continuation_chance)
+            return dict(dieroll=dieroll, continuation_chance=continuation_chance,
+                        die_threshold_plus_one=continuation_chance + 1, )
+            # print(get_supergroup_round_results(player))
+
+
 
 class End(Page):
     @staticmethod
@@ -341,8 +359,8 @@ page_sequence = [
     Decision,
     ResultsWaitPage,
     Results,
-    # Observer_Results,
-    Observer_History,
-    # EndRound,
+    ObserverResults,
+    ObserverHistory,
+    EndRound,
     # End
 ]
