@@ -1,5 +1,5 @@
 {{ block title }}
-Your choice
+Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }} &#8211;Your choice
 {{ endblock }}
 {{ block content }}
 
@@ -31,6 +31,11 @@ Your choice
         </tr>
     </table>
 </div>
+
+    {{ if cycle_round_number > 1}}
+        {{ include Constants.summary_template }}
+    {{ endif }}
+
 {{ next_button }}
 
 {{ endblock }}

@@ -10,7 +10,7 @@ History
         {{ for g in active_players_in_all_rounds }}
         {{ for p in g}}
         {{if p.id_in_group == 1}}
-        <th>Round {{ p.round_number }}</th>
+        <th>Round {{ cycle_round_number }}</th>
                 {{ endif }}
         {{ endfor }}
         {{ endfor }}
@@ -21,7 +21,7 @@ History
     <tr>
 
         {{ for p in g}}
-            {{ if p.round_number == 1}}
+            {{ if p.round_number == start_round}}
             <th>
             {{ p.id_in_group }}
             </th>

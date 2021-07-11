@@ -13,6 +13,7 @@ This is an indefinitely repeated Prisoner's Dilemma with random rematching every
 class Constants(BaseConstants):
     name_in_url = 'MWR_control'
     instructions_template = 'control/instructions.html'
+    summary_template ='control/summary.html'
     players_per_group = None
     num_super_games = 5
     delta = 0.90  # discount factor equals to 0.90
@@ -77,7 +78,7 @@ class Player(BasePlayer):
         label="""This player's decision""",
         widget=widgets.RadioSelect
     )
-
+    cycle_round_number = models.IntegerField(initial=1)
 
 # FUNCTIONS
 def creating_session(subsession: Subsession):
@@ -170,16 +171,32 @@ def get_supergroup_round_results(player: Player):
         round_results.append(result)
     return round_results
 
+def get_previous_others(player: Player):
+    supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
+    previous_mes= player.in_rounds(supergame_first_round, player.round_number-1)
+    summary_history = []
+    for m in previous_mes:
+        partner = other_player(m)
+        #TODO: not sure the following line
+        m.cycle_round_number = m.round_number -m.session.vars['super_games_start_rounds'][m.subsession.curr_super_game - 1]+1
+        summary = dict(round_number=m.cycle_round_number ,
+                       decision=m.decision,
+                       partner_decision=partner.decision)
+        summary_history.append(summary)
+    return summary_history
 
-# Record which super game players are currently in
-# def get_progress(subsession:Subsession,group:Group):
-#     # Get Constants attributes once for all
-#     const = Constants
-#     if subsession.round_number in const.super_games_start_round:
-#         group.current_super_game=group.current_super_game+1
+def get_cycle_earning(player:Player):
+    supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
+    previous_mes = player.in_rounds(supergame_first_round, player.round_number - 1)
+    earning=[]
+    for m in previous_mes:
+        payoff = m.payoff
+        earning.append(payoff)
+    cycle_earning = sum(earning)
+    return cycle_earning
+
 
 #Get opponent player id
-
 def other_player(player: Player):
     if player.pair_id !=0:
         return [p for p in player.get_others_in_group() if p.pair_id == player.pair_id][0]
@@ -215,20 +232,6 @@ def set_payoff(player: Player):
 class Introduction(Page):
     timeout_seconds = 100
 
-    # @staticmethod
-    # def vars_for_template(player: Player):
-    #     if player.pair_id == 0:
-    #         others = get_supergroup_previous_others(player)
-    #         print(others)
-    #     return dict()
-
-    @staticmethod
-    def vars_for_template(player: Player):
-        if player.pair_id == 0:
-            others = get_supergroup_previous_others(player)
-            print(others)
-        return dict()
-
 
 
 class Instructions1(Page):
@@ -237,12 +240,6 @@ class Instructions1(Page):
     def is_displayed(player: Player):
         return player.round_number == 1
 
-    @staticmethod
-    def vars_for_template(player: Player):
-        if player.pair_id == 0:
-            others = get_supergroup_previous_others(player)
-            print(others)
-        return dict()
 
 
 class Instructions2(Page):
@@ -266,6 +263,10 @@ class Instructions3(Page):
     def is_displayed(player: Player):
         return player.round_number == 1
 
+class AssignRole(Page):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number == player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
 
 class Decision(Page):
     form_model = 'player'
@@ -275,6 +276,12 @@ class Decision(Page):
     #The decision page will not be displayed to observer
     def is_displayed(player: Player):
         return player.pair_id != 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id != 0:
+            return dict(past_players= get_previous_others(player))
+                        # cycle_round_number = player.cycle_round_number)
 
 
 class ResultsWaitPage(WaitPage):
@@ -291,7 +298,8 @@ class ObserverResults(Page):
     def vars_for_template(player: Player):
         if player.pair_id == 0:
             # print(get_supergroup_round_results(player))
-            return dict(active_players_round_results=get_supergroup_round_results(player))
+            return dict(active_players_round_results=get_supergroup_round_results(player),
+                        cycle_round_number = player.round_number -player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]+1)
 
 # Show observer the history of decisions all 6 active players have chosen
 class ObserverHistory(Page):
@@ -302,7 +310,9 @@ class ObserverHistory(Page):
     @staticmethod
     def vars_for_template(player: Player):
         if player.pair_id == 0:
-            return dict(active_players_in_all_rounds=get_supergroup_previous_others(player))
+            return dict(active_players_in_all_rounds=get_supergroup_previous_others(player),
+                        cycle_round_number = player.round_number -player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]+1,
+                        start_round=player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1])
 
 
 class Results(Page):
@@ -334,14 +344,22 @@ class EndRound(Page):
     def vars_for_template(player: Player):
         if player.pair_id != 0:
             continuation_chance = int(round(Constants.delta * 100))
-            if self.subsession.round_number in Constants.last_rounds:
-                #TODO: get subsession variable
+            if player.subsession.round_number in player.session.vars['super_games_end_rounds']:
                 dieroll = random.randint(continuation_chance + 1, 100)
             else:
                 dieroll = random.randint(1, continuation_chance)
             return dict(dieroll=dieroll, continuation_chance=continuation_chance,
                         die_threshold_plus_one=continuation_chance + 1, )
             # print(get_supergroup_round_results(player))
+
+class EndCycle(Page):
+    @staticmethod
+    def is_displayed(player:Player):
+        return player.round_number == player.session.vars['super_games_end_rounds'][player.subsession.curr_super_game - 1]
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return dict(earning_cycle=get_cycle_earning(player))
 
 
 
@@ -356,11 +374,14 @@ page_sequence = [
     Instructions1,
     Instructions2,
     Instructions3,
+    # Quiz,
+    AssignRole,
     Decision,
     ResultsWaitPage,
     Results,
     ObserverResults,
     ObserverHistory,
     EndRound,
+    EndCycle,
     # End
 ]
