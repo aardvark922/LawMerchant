@@ -16,7 +16,7 @@ class Constants(BaseConstants):
     summary_template ='control/summary.html'
     players_per_group = None
     num_super_games = 5
-    delta = 0.90  # discount factor equals to 0.90
+    delta = 0.50  # discount factor equals to 0.90
 
     time_limit = 60 * 20
     time_limit_seconds = 60 * 20
@@ -60,6 +60,9 @@ class Constants(BaseConstants):
     # payoff if both players cooperate or both defect
     both_cooperate_payoff = cu(25)
     both_defect_payoff = cu(10)
+
+    #payoff for observer
+    observer_payoff = cu(18)
 
 
 class Subsession(BaseSubsession):
@@ -232,36 +235,16 @@ def set_payoff(player: Player):
 class Introduction(Page):
     timeout_seconds = 100
 
-
-
-class Instructions1(Page):
+class Instructions0(Page):
     #instruction will be shown to players before they start the game
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number == 1
 
-
-
-class Instructions2(Page):
     @staticmethod
     def vars_for_template(player:Player):
         continuation_chance = int(round(Constants.delta * 100))
-        return dict(continuation_chance=continuation_chance, die_threshold_plus_one=continuation_chance + 1, )
-
-    @staticmethod
-    def is_displayed(player: Player):
-        return player.round_number == 1
-
-
-class Instructions3(Page):
-    @staticmethod
-    def vars_for_template(player:Player):
-        continuation_chance = int(round(Constants.delta * 100))
-        return dict(continuation_chance=continuation_chance, die_threshold_plus_one=continuation_chance + 1, )
-
-    @staticmethod
-    def is_displayed(player: Player):
-        return player.round_number == 1
+        return dict(continuation_chance=continuation_chance,end_chance=100-continuation_chance )
 
 class AssignRole(Page):
     @staticmethod
@@ -280,8 +263,10 @@ class Decision(Page):
     @staticmethod
     def vars_for_template(player: Player):
         if player.pair_id != 0:
-            return dict(past_players= get_previous_others(player))
-                        # cycle_round_number = player.cycle_round_number)
+            return dict(past_players= get_previous_others(player),
+                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1)
+
 
 
 class ResultsWaitPage(WaitPage):
@@ -371,9 +356,7 @@ class End(Page):
 
 page_sequence = [
     # Introduction,
-    Instructions1,
-    Instructions2,
-    Instructions3,
+    Instructions0,
     # Quiz,
     AssignRole,
     Decision,

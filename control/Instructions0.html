@@ -1,0 +1,427 @@
+{{ block title }}
+Instructions
+{{ endblock }}
+{{ block content }}
+
+<style>
+    .tab {
+        display: none;
+    }
+</style>
+
+<div class="tab" align="justify">
+    <h4>Overview</h4>
+    <p>
+        This is an experiment in decision-making. Purdue University has provided funds for this research. The
+        instructions are simple. If you follow them carefully and make good decisions, you can earn an appreciable
+        amount of money. These earnings will be paid to you privately in cash at the end of the experiment.
+    </p>
+    <p>
+        We ask that you not talk with one another for the duration of the experiment. Please turn off your
+        cell-phones.
+        Do not use e-mail.
+    </p>
+    <p>
+        During the course of this experiment, you will be called upon to make decisions in several periods. The
+        experiment is divided into <b>five</b> sequences of periods and each sequence is
+        referred to as a <b>cycle</b>.
+    </p>
+    <p>
+    <div style="margin-left: 40px">
+        <li>At the beginning of a cycle, each participant in this room will be randomly assigned to a <b>set</b>.
+        </li>
+        <li>In each set there will be <b>seven</b> persons.</li>
+        <li>One of the participants in each set will be randomly chosen to be the <span
+                style="font-style: italic; font-weight: bold">observer</span> throughout the whole cycle. The
+            other six participants are <span
+                    style="font-style: italic; font-weight: bold">active participants</span>.
+        </li>
+        <li>If you are an <span style="font-style: italic; font-weight: bold">active participant</span>, for the
+            whole
+            duration of a cycle, you will interact exclusively with the five other
+            <span style="font-style: italic; font-weight: bold">active participants</span> in your set and
+            nobody else. Every <span style="font-style: italic; font-weight: bold">active participant</span> in a
+            set
+            will be given a fixed ID: 1, 2, 3, 4, 5 or 6.
+        </li>
+        <li>If you are the
+            <span style="font-style: italic; font-weight: bold">observer</span> ,
+            for the whole duration of a cycle, you will be observing what the other six
+            <span style="font-style: italic; font-weight: bold">active participants</span> are doing.
+        </li>
+        <li>You might meet again these participants in the following cycles, but you won’t be able to recognize each
+            other because ID numbers are randomly assigned at the start of each cycle.
+        </li>
+        <li>Your role as the <span style="font-style: italic; font-weight: bold">observer</span> or
+            <span style="font-style: italic; font-weight: bold">active participant</span> in one cycle is not
+            dependent on your role in a previous
+            cycle.
+        </li>
+    </div>
+
+    </p>
+
+    <p>
+        <button type="button" class="btn btn-primary btn-tab" data-offset="1">Next</button>
+    </p>
+</div>
+<div class="tab" align="justify">
+    <h4>Interaction rules <span style="font-size: large">(1/3)</span></h4>
+    <!-- Duplicate this div if you have more than 3 pages of instructions ... -->
+    <p><u>The following rules only apply to <span
+            style="font-style: italic; font-weight: bold">active participants</span>!</u>
+    </p>
+    <div>
+        <p>In each <b>period</b> of a cycle: </p>
+        <div style="margin-left: 40px">
+
+            <li>In each period you will be matched to one other <i><b>active participant</b></i> selected at random from
+                the
+                set you are
+                assigned to. We will refer to this person as “<b>your match</b>”.
+            </li>
+
+            <li>You will not be informed of the identity of your match. Hence, you do not know whether you have already
+                interacted with that person in previous periods of the same cycle.
+            </li>
+
+            <li>You and your match will interact according to the rules that will be explained in a moment.</li>
+
+            <li>After each period you will be re-matched to an <i><b>active participant</b></i> chosen at random from
+                the
+                set you are
+                assigned to. There is one chance out of five that you will be matched with any given <i><b>active
+                    participants</b></i> in
+                your set.
+            </li>
+        </div>
+        <br>
+        <table class='table table-bordered text-center'
+               style='width: auto; margin: auto'>
+            <caption>Payoff Table</caption>
+            <tr>
+                <th colspan=2 rowspan=2></th>
+                <th colspan=2 style="color: darkgreen">The Other Participant</th>
+            </tr>
+            <tr>
+                <th style="color: darkgreen">Action Y</th>
+                <th style="color: darkgreen">Action Z</th>
+            </tr>
+            <tr>
+                <th rowspan=2><span class="rotate90" style="color: darkred">You</span></th>
+                <th style="color: darkred">Action Y</th>
+                <td><span style="color: darkred">{{ Constants.both_cooperate_payoff }}</span>, <span
+                        style="color: darkgreen"> {{ Constants.both_cooperate_payoff }}</span></td>
+                <td><span style="color: darkred">{{ Constants.betrayed_payoff }}</span>, <span style="color: darkgreen">{{ Constants.betray_payoff }} </span>
+                </td>
+            </tr>
+            <tr>
+                <th style="color: darkred">Action Z</th>
+                <td><span style="color: darkred">{{ Constants.betray_payoff }}</span>, <span style="color: darkgreen">{{ Constants.betrayed_payoff }}</span>
+                </td>
+                <td><span style="color: darkred">{{ Constants.both_defect_payoff }}</span>, <span
+                        style="color: darkgreen">{{ Constants.both_defect_payoff }}</span>
+                </td>
+            </tr>
+        </table>
+        <p>In a period, you and your match can make either of two choices, Y or Z. The points you earn in a period
+            depend
+            upon both the choice you make, and the choice made by your match in that period. As the payoff table above
+            indicates, there are four possible outcomes: </p>
+        <ol>
+            <li>If both of you choose <b>Y</b> this period then: you both earn <b>25</b> points.</li>
+            <li>If you choose <b><span style="color: darkred">Y</span></b>this period and your match chooses Z then: you
+                earn <b><span style="color: darkred">5</span></b> points, and your match earns <b> <span
+                        style="color: darkgreen">30</span></b> points.
+            </li>
+            <li>If you choose <b><span style="color: darkred">Z</span></b> this period and your match chooses Y then:
+                you
+                earn <b><span style="color: darkred">30</span></b> points, and your match earns <b> <span
+                        style="color: darkgreen">5</span></b> points.
+            </li>
+            <li>If you both choose <b>Z</b> then: you both earn <b>10</b> points.</li>
+        </ol>
+    </div>
+    <p>To make your choice in each period, click the option button next to either Y or Z. You may change your mind at
+        any time
+        prior to clicking the “Submit” button by simply clicking on the option button next to Y or Z. You are free to
+        choose Y or Z
+        in every period. When you are satisfied with your choice, click the “Submit” button. After all persons have made
+        their choices, the results of the period will appear on your screen. </p>
+    <p>
+        <button type="button" class="btn btn-primary btn-tab" data-offset="-1">Previous</button>
+        <button type="button" class="btn btn-primary btn-tab" data-offset="1">Next</button>
+    </p>
+</div>
+
+<div class="tab" align="justify">
+    <h4>Interaction rules <span style="font-size: large">(2/3)</span></h4>
+    <p><u>The following rules only apply to <span
+            style="font-style: italic; font-weight: bold">active participants</span>!</u>
+    </p>
+    <p>The result screen will display the number of points you have earned for the period along with <b>your choice and
+        the
+        choice of your match</b> . The first column of the ‘Summary of Results’ table contains your past choices. The
+        second
+        column concerns the choices of your previous matches. Notice that <b>choices in the second column were most
+            likely
+            made by different persons in different periods. You are not given information on the choices made by the
+            other
+            four persons in your set</b>. </p>
+
+    <p>At this stage a ball will be drawn from a “virtual” urn containing one hundred balls numbered from 1 to 100. Each
+        ball is equally likely to be selected. The computer program will randomly draw a ball and show the number on the
+        result screen. If this random number is less than or equal to {{continuation_chance}}, then the cycle will
+        continue into the next
+        period. If this number is greater than {{continuation_chance}}, then the cycle ends. Therefore, <b>after each
+            period there is a {{continuation_chance}}%
+            chance that there will be another period of interaction in the cycle and a {{end_chance}}% chance that the
+            cycle will
+            end</b>. </p>
+
+    <p>Suppose that a number less than or equal to 90 has been drawn. Then you press the “Next” button to proceed.
+        You will face the same decisional situation as in the previous period, but <b>with a person selected at random
+            from
+            the set of <i>active participants</i> you were assigned to</b>. Remember that there are six <b><i>active
+            participants </i></b> in each set. </p>
+
+    <p>Before making your choice, you may review all the outcomes in previous periods of the cycle from the “Summary of
+        Results” table. The table shows your history and the past choices of the persons who happened to be your match
+        in the period. You then choose either Y or Z. Your choice and the choice of your match this period are recorded
+        and added to the “Summary of Results” table in the lower portion of your screen. </p>
+
+    <p>If the number drawn is greater than {{continuation_chance}} then the cycle ends. When a cycle ends, you will be
+        notified in a new
+        screen. There will be a total of five cycles. The rules in the following cycles are the same as in the first,
+        but you will interact with different people. More precisely, after each cycle, new sets of individuals will be
+        formed. This random assignment does not depend on any previous choices. A participant might interact with a
+        person for more than one cycle. In each future cycle, your chance of being selected to be the <b><i>observer</i></b>
+        is 1/7,
+        whereas your chance of being selected to be an <b><i>active participant</i></b> is 6/7. </p>
+    <p>
+        <button type="button" class="btn btn-primary btn-tab" data-offset="-1">Previous</button>
+        <button type="button" class="btn btn-primary btn-tab" data-offset="1">Next</button>
+    </p>
+</div>
+
+<div class="tab" align="justify">
+    <h4>Interaction rules <span style="font-size: large">(3/3)</span></h4>
+    <p><u>The following rules only apply to <span
+            style="font-style: italic; font-weight: bold">the observer</span>!</u>
+    </p>
+
+    <p>In each <b>period</b> of a cycle:
+    <li>You can observe the whole history of choices of all six <b><i>active participants</i></b> in your set.</li>
+    <li>You will not interact with <b><i>active participants</i></b>.</li>
+    <li>You get {{Constants.observer_payoff}}</li>
+    </p>
+
+    <p>
+        When all the six <b><i>active participants</i></b> made their decisions and reach their result page, you will
+        have at most 30
+        seconds to view their actions in that period. Suppose in one period, the following matches are formed: {(player
+        1, player3), (player 2, player 4), (player 5, player 6)}. An example of what you will see is shown in the table
+        below:
+    </p>
+    <table class="table">
+        <tr>
+            <th width="90">ID</th>
+            <th width="90">Choice</th>
+            <th width="90">Earning</th>
+            <th width="90">Match's ID</th>
+            <th width="90">Match’s choice</th>
+            <th width="90">Match’s earning</th>
+        </tr>
+        <tr>
+            <td style="font-weight: bold"> 1</td>
+            <td> Y</td>
+            <td> 5</td>
+            <td style="font-weight: bold"> 3</td>
+            <td> Z</td>
+            <td> 30</td>
+        </tr>
+
+        <tr>
+            <td style="font-weight: bold"> 2</td>
+            <td> Z</td>
+            <td> 10</td>
+            <td style="font-weight: bold"> 4</td>
+            <td> Z</td>
+            <td> 10</td>
+        </tr>
+
+        <tr>
+            <td style="font-weight: bold"> 3</td>
+            <td> Z</td>
+            <td> 30</td>
+            <td style="font-weight: bold"> 1</td>
+            <td> Y</td>
+            <td> 5</td>
+        </tr>
+
+        <tr>
+            <td style="font-weight: bold"> 4</td>
+            <td> Z</td>
+            <td> 10</td>
+            <td style="font-weight: bold"> 2</td>
+            <td> Z</td>
+            <td> 10</td>
+        </tr>
+
+        <tr>
+            <td style="font-weight: bold"> 5</td>
+            <td> Y</td>
+            <td> 25</td>
+            <td style="font-weight: bold"> 6</td>
+            <td> Y</td>
+            <td> 25</td>
+        </tr>
+
+        <tr>
+            <td style="font-weight: bold"> 6</td>
+            <td> Y</td>
+            <td> 25</td>
+            <td style="font-weight: bold"> 5</td>
+            <td> Y</td>
+            <td> 25</td>
+        </tr>
+    </table>
+
+    <p>After observing the actions of all active participants, you will see <b>the same</b> random number that
+        determines
+        whether the cycle will continue as the rest members of your set.</p>
+
+    <p>If the cycle continues, you will see a table summarizing what every <b><i>active participant</i></b> have done so
+        far. Suppose
+        the cycle has continued for 2 periods, below is what you will see when <b><i>active participants</i></b> are
+        making decisions
+        in period 3:</p>
+
+    <table class="table">
+        <tr>
+            <th width="90">Group ID</th>
+            <th width="90">Period 1</th>
+            <th width="90">Period 2</th>
+            <th width="90">Period 3</th>
+            <th width="90">...</th>
+        </tr>
+        <tr>
+            <td> 1</td>
+            <td> Y</td>
+            <td> Z</td>
+            <td> ...</td>
+            <td> ...</td>
+        </tr>
+
+        <tr>
+            <td> 2</td>
+            <td> Z</td>
+            <td> Y</td>
+            <td> ...</td>
+            <td> ...</td>
+        </tr>
+
+        <tr>
+            <td> 3</td>
+            <td> Z</td>
+            <td> Y</td>
+            <td> ...</td>
+            <td> ...</td>
+        </tr>
+
+        <tr>
+            <td> 4</td>
+            <td> Z</td>
+            <td> Z</td>
+            <td> ...</td>
+            <td> ...</td>
+        </tr>
+
+        <tr>
+            <td> 5</td>
+            <td> Y</td>
+            <td> Y</td>
+            <td> ...</td>
+            <td> ...</td>
+        </tr>
+
+        <tr>
+            <td> 6</td>
+            <td> Y</td>
+            <td> Y</td>
+            <td> ...</td>
+            <td> ...</td>
+        </tr>
+
+    </table>
+    <p>
+        <button type="button" class="btn btn-primary btn-tab" data-offset="-1">Previous</button>
+        <button type="button" class="btn btn-primary btn-tab" data-offset="1">Next</button>
+    </p>
+</div>
+
+<div class="tab" align="justify">
+    <h3>Earnings</h3>
+    <p>The points you earned in each period are summed up at the end of the experiment. For every 100 points that you
+        earn you will receive 1 dollar ($1.00). Therefore, the more points you earn the more money you earn. In
+        addition, you will receive a $5 show-up fee. You will be paid your earnings in cash and in private at the end of
+        today’s session.
+    </p>
+    <br>
+    <h3>Final Comments</h3>
+    <p>
+        First, do not discuss your choices or your results with anyone at any time during the experiment.
+    </p>
+
+    <p> Second, your ID# is private. Do not reveal it to anyone. </p>
+
+    <p>Third, since there is a {{continuation_chance}}% chance that at the end of a period the cycle will
+        continue. However, since the stopping decision is made randomly, some cycles may be much longer than 20 periods
+        and some others may be much shorter. </p>
+
+    <p>Fourth, if you are an <b><i>active participant</i></b> , remember that after each period you will be matched
+        randomly to someone
+        in the set you were assigned to. As there are six <b><i>active participants</i></b> in the set, the probability
+        of you being
+        matched with the same person in two consecutive periods of a cycle is 1/5. You are not told the identity of your
+        match. </p>
+
+    <p>Fifth, if you are <b><i>the observer</i></b>, your role is fixed within a cycle.</p>
+
+    <p>Sixth, the rules are the same in all five cycles. After a cycle, your chance of being an <b><i>active
+        participant</i></b> is
+        6/7 while your chance of being <b><i>the observer</i></b> is 1/7.</p>
+
+    <h6>Questions?</h6>
+    <p>
+        Now is the time for questions. Does anyone have any questions before we begin?
+    </p>
+
+    <p>
+        <button type="button" class="btn btn-primary btn-tab" data-offset="-1">Previous</button>
+        <button class="btn btn-primary">Next</button>
+    </p>
+</div>
+
+<script>
+
+    let activeTab = 0;
+
+    function showCurrentTabOnly() {
+        let tabIndex = 0;
+        for (let tab of document.getElementsByClassName('tab')) {
+            tab.style.display = tabIndex === activeTab ? 'block' : 'none';
+            tabIndex++;
+        }
+    }
+
+    showCurrentTabOnly();
+    for (let btn of document.getElementsByClassName('btn-tab')) {
+        btn.onclick = function () {
+            activeTab += parseInt(btn.dataset.offset);
+            showCurrentTabOnly();
+        }
+    }
+</script>
+
+{{ endblock }}
