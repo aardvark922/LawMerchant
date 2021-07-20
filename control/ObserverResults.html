@@ -26,6 +26,12 @@
     {{ endfor }}
 </table>
 
-{{ next_button }}
+<p>The next button will appear after 20 seconds</p>
+<button class="btn btn-primary" style="display: none" id="next-button">Next</button>
 
+    <script>
+        setTimeout(function() {
+            document.getElementById('next-button').style.display = 'block';
+        }, 2 * 1000);
+    </script>
 {{ endblock }}

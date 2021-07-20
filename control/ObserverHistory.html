@@ -3,14 +3,15 @@ History
 {{ endblock }}
 {{ block content }}
 <p>Below is the history table of active participants in your set </p>
+<div  style="overflow-x:auto;width: 100%">
 <table class="table">
 
     <tr>
         <th>Group ID</th>
         {{ for g in active_players_in_all_rounds }}
         {{ for p in g}}
-        {{if p.id_in_group == 1}}
-        <th>Round {{ cycle_round_number }}</th>
+        {{if p.id == 1}}
+        <th>Round {{ p.round_number }}</th>
                 {{ endif }}
         {{ endfor }}
         {{ endfor }}
@@ -21,9 +22,9 @@ History
     <tr>
 
         {{ for p in g}}
-            {{ if p.round_number == start_round}}
+            {{ if p.round_number == 1}}
             <th>
-            {{ p.id_in_group }}
+            {{ p.id}}
             </th>
             {{ endif }}
         <td>
@@ -35,7 +36,15 @@ History
 
 
 </table>
+    </div>
 
-{{ next_button }}
+<p>The next button will appear after 20 seconds</p>
+<button class="btn btn-primary" style="display: none" id="next-button">Next</button>
+
+    <script>
+        setTimeout(function() {
+            document.getElementById('next-button').style.display = 'block';
+        }, 2 * 1000);
+    </script>
 
 {{ endblock }}
