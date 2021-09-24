@@ -1,0 +1,22 @@
+
+<br><br>
+<h4>Summary of Results</h4>
+<table  border="0" cellpadding="0" cellspacing="0" width="100%" class="scrollTable">
+    <thead class="fixedHeader">
+    <tr class="alternateRow">
+        <th>Round number</th>
+        <th>Your action</th>
+        <th>Partner's action</th>
+    </tr>
+    </thead>
+    <tbody class="scrollContent">
+       {{ for past_player in past_players }}
+    <tr>
+        <td class="normalRow">{{ past_player.round_number }}</td>
+        <td>{{ past_player.decision }}</td>
+        <td>{{ past_player.partner_decision }}</td>
+    </tr>
+    {{ endfor }}
+    </tbody>
+
+</table>

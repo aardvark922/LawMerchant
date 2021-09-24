@@ -11,9 +11,9 @@ This is an indefinitely repeated Prisoner's Dilemma with random rematching every
 
 
 class Constants(BaseConstants):
-    name_in_url = 'LM_0'
-    instructions_template = 'control/instructions.html'
-    summary_template = 'control/summary.html'
+    name_in_url = 'LM_1'
+    instructions_template = 'LawMerchant/instructions.html'
+    summary_template = 'LawMerchant/summary.html'
     players_per_group = None
     num_super_games = 5
     delta = 0.70  # discount factor equals to 0.90
@@ -66,6 +66,7 @@ class Constants(BaseConstants):
 
 class Subsession(BaseSubsession):
     curr_super_game = models.IntegerField(initial=0)
+    honesty = models.BooleanField()
 
 
 class Group(BaseGroup):
@@ -105,6 +106,8 @@ class Player(BasePlayer):
 
 # FUNCTIONS
 def creating_session(subsession: Subsession):
+    #generate treatment code of current session
+    honesty = subsession.session.config['honesty']
     # Importing modules needed
     from random import randint, shuffle, choices
     # Get Constants attributes once for all
@@ -321,6 +324,23 @@ class AssignRole(Page):
         return player.round_number == player.session.vars['super_games_start_rounds'][
             player.subsession.curr_super_game - 1]
 
+class Stage1(Page):
+    pass
+
+class Stage2(Page):
+    pass
+
+class Stage3(Page):
+    pass
+
+class Stage4(Page):
+    pass
+
+class Stage5(Page):
+    pass
+
+class Stage6(Page):
+    pass
 
 class Decision(Page):
     form_model = 'player'

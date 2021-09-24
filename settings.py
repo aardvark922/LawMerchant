@@ -6,6 +6,18 @@ SESSION_CONFIGS = [
          app_sequence=['control'],
          num_demo_participants=14,
      ),
+    dict(
+         name='honest',
+         app_sequence=['LawMerchant'],
+         honesty=True,
+         num_demo_participants=14,
+     ),
+    dict(
+         name='dishonest',
+         app_sequence=['LawMerchant'],
+         honesty=False,
+         num_demo_participants=14,
+     ),
 
     dict(
         name='Prisoner_Dilemma',

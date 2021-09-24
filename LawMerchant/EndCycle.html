@@ -1,0 +1,22 @@
+{{ block title }}
+Cycle {{ subsession.curr_super_game }} is Over!
+{{  endblock }}
+
+{{ block content }}
+
+<p>This ends Cycle {{ subsession.curr_super_game }}.</p>
+
+<p>Your earning from this cycle is {{earning_cycle}}</p>
+
+{{next_button}}
+{{ endblock }}
+
+{{ block styles }}
+<style>
+
+    .otree-timer {
+        display: none;
+    }
+</style>
+{{ endblock }}
+

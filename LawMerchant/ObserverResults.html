@@ -1,0 +1,37 @@
+{{  block title  }}
+    Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }} &#8211; Results
+{{ endblock }}
+{{ block content }}
+<p>Now you have at most 30 seconds to view the actions made by <span style="font-style: italic; font-weight: bold">active participants</span> in your set.</p>
+
+<table class="table">
+    <tr>
+        <th>ID</th>
+        <th>Choice</th>
+        <th>Earning</th>
+        <th>Match's ID</th>
+        <th>Match’s choice</th>
+        <th>Match’s earning</th>
+    </tr>
+    {{ for p in active_players_round_results }}
+    <tr>
+        <td style="font-weight: bold">{{ p.id }} </td>
+        <td>{{ p.decision }}</td>
+        <td>{{ p.payoff }}</td>
+        <td style="font-weight: bold">{{ p.partner_id }}</td>
+        <td>{{ p.partner_decision }}</td>
+        <td>{{ p.partner_payoff }}</td>
+
+    </tr>
+    {{ endfor }}
+</table>
+
+<p>The next button will appear after 20 seconds</p>
+<button class="btn btn-primary" style="display: none" id="next-button">Next</button>
+
+    <script>
+        setTimeout(function() {
+            document.getElementById('next-button').style.display = 'block';
+        }, 2 * 1000);
+    </script>
+{{ endblock }}
