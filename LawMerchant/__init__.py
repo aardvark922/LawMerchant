@@ -21,27 +21,6 @@ class Constants(BaseConstants):
     time_limit = 60 * 20
     time_limit_seconds = 60 * 20
 
-
-    # generate a list of supergame lengths
-
-    # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
-    # super_game_duration = [int(s) for s in super_game_duration]
-
-    # TODO: can I implement the following without using numpy?
-    # TODO: how to implement block random termination?
-    # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
-    # super_game_duration = [int(s) for s in super_game_duration]
-    # TODO: seems that delta in the last line could not be recognized by python or otree?
-
-    # List of starting round for each super game
-    # super_games_start_round = [1]
-    # start_round = 1
-    # for s in super_game_duration[:-1]:
-    #     # only need to use first four lengths to calculate start round
-    #     start_round = start_round + s
-    #     # print('start round:',start_round)
-    #     super_games_start_round = super_games_start_round + [start_round]
-    #     # print('super game start round:',super_games_start_round)
     num_rounds = 100  # sum(super_game_duration)
 
     # Nested groups parameters
@@ -60,8 +39,15 @@ class Constants(BaseConstants):
 
     # payoff for observer
     observer_payoff = cu(18)
+    #cost of Query in stage 1
+    query_cost=cu(2.5)
+    #cost of Report in stage 3
+    report_cost= cu(2.5)
+    #cost of pay the fine in stage 5
+    fine = cu(20)
 
     true_false_choices = [(1, 'True'), (0, 'False')]
+    yes_no_choices = [(1, 'Yes'), (0, 'No')]
 
 
 class Subsession(BaseSubsession):
@@ -75,20 +61,14 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     pair_id = models.IntegerField(initial=0)
-    decision = models.StringField(
-        initial='NA',
-        choices=[['Action Y', 'Action Y'], ['Action Z', 'Action Z']],
-        label="""This player's decision""",
-        widget=widgets.RadioSelect
-    )
-    cycle_round_number = models.IntegerField(initial=1)
+    #TODO comprehenstion test question for two treatments
     quiz1 = models.BooleanField(
         label='1. If you are the observer in current cycle, '
               'you will be an active participant in the next cycle for sure.',
         choices=Constants.true_false_choices)
     quiz2 = models.IntegerField(label='2.  If you are an active player in current cycle, '
-                                     'when you choose Y and your partner chooses Z. What is your payoff?',
-                                choices=[(1,"25"),(2,"5"),(3,"10"),(4,"30")],
+                                      'when you choose Y and your partner chooses Z. What is your payoff?',
+                                choices=[(1, "25"), (2, "5"), (3, "10"), (4, "30")],
                                 widget=widgets.RadioSelect)
     quiz3 = models.BooleanField(
         label="3. The lengths of each cycle are the same.",
@@ -102,6 +82,44 @@ class Player(BasePlayer):
         label="5. If you are an active participant, you will not know the identity of your matches.",
         choices=Constants.true_false_choices
     )
+    #stage 0 bribery decision
+    bribery = models.CurrencyField(
+        initial=0,
+        label='''Observer's bribery decision''',
+        min=0,
+        max=30,
+        widget=widgets.CheckboxInput
+    )
+    #stage 1 query decision
+    query = models.StringField(
+        initial='NA',
+        choices=Constants.yes_no_choices,
+        label="""This player's query decision""",
+        widget=widgets.RadioSelect
+    )
+    #stage 2 PD decision
+    decision = models.StringField(
+        initial='NA',
+        choices=[['Action Y', 'Action Y'], ['Action Z', 'Action Z']],
+        label="""This player's decision""",
+        widget=widgets.RadioSelect
+    )
+    #stage 3 report decision
+    report= models.StringField(
+        initial='NA',
+        choices=Constants.yes_no_choices,
+        label="""This player's report decision""",
+        widget=widgets.RadioSelect
+    )
+    #stage 5 pay fine decision
+    payfine= models.StringField(
+        initial='NA',
+        choices=Constants.yes_no_choices,
+        label="""This player's pay fine decision""",
+        widget=widgets.RadioSelect
+    )
+    cycle_round_number = models.IntegerField(initial=1)
+
 
 
 # FUNCTIONS
@@ -323,6 +341,10 @@ class AssignRole(Page):
     def is_displayed(player: Player):
         return player.round_number == player.session.vars['super_games_start_rounds'][
             player.subsession.curr_super_game - 1]
+
+class Stage0(Page):
+    #Bribery request page that will only show when honesty= 0
+    pass
 
 class Stage1(Page):
     pass
