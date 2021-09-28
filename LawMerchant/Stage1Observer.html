@@ -1,16 +1,49 @@
 {{ block title }}
-Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }} &#8211;Your choice
+Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 1&#8211;
+Query from <span style="font-style: italic">active participants</span>
 {{ endblock }}
 {{ block content }}
 
-<div align="justify">
-    <p style="font-size: x-large">Stage 1</p>
-    <p>You have been randomly matched with an <span style="font-style: italic">active participant</span> in your set.</p>
+<h5>Record of <span style="font-style: italic">active participants</span> in your set</h5>
+<table class="table" style="width: 400px">
+    <tr>
+        <th style="color: darkred">ID</th>
+        <th style="color: darkred">Record</th>
+        <th style="color: darkblue">Match's ID</th>
+        <th style="color: darkblue">Match’s record</th>
+    </tr>
+    {{ for p in active_players_round_results }}
+    <tr>
+        <td style="font-weight: bold; color: darkred">{{ p.id }} </td>
+        <td style="color: darkred">{{ p.record }}</td>
+        <td style="font-weight: bold; color: darkblue">{{ p.partner_id }}</td>
+        <td style="color: darkblue">{{ p.partner_record }}</td>
 
+    </tr>
+    {{ endfor }}
+</table>
+<br></br>
+<div><p>{{query_list}} queried. Now you will send the following messages to them and their match.</p>
+    {{ for p in active_players_round_results }}
+        {{if p.query}}
+            {{if p.partner_query}}
+
+                    <span style="font-weight: bold;color: darkred">Player {{p.id}}:</span>
+                    <ul style="color: darkred">  Your match has {{p.partner_record}}.</ul>
+                    <ul style="color: darkblue">You have been queried. You have {{p.record}}</ul>
+
+            {{else}}
+            <p style="color: darkred"> <span style="font-weight: bold">Player {{p.id}}</span>: Your match has {{p.partner_record}}.</p>
+            <p style="color: darkblue"> <span style="font-weight: bold">Player {{p.partner_id}}</span>: You have been queried. You have {{p.partner_record}}</p>
+            {{endif}}
+        {{endif}}
+    {{endfor}}
 </div>
 
 
-<button class="otree-btn-next btn btn-primary">Submit</button>
+{{ next_button }}
+
 
 
 {{ endblock }}
+

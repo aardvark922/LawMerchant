@@ -15,8 +15,8 @@ class Constants(BaseConstants):
     instructions_template = 'LawMerchant/instructions.html'
     summary_template = 'LawMerchant/summary.html'
     players_per_group = None
-    num_super_games = 5
-    delta = 0.70  # discount factor equals to 0.90
+    num_super_games = 2  # 5 in experiment
+    delta = 0.9  # discount factor equals to 0.90 in experiment
 
     time_limit = 60 * 20
     time_limit_seconds = 60 * 20
@@ -39,16 +39,16 @@ class Constants(BaseConstants):
 
     # payoff for observer
     observer_payoff = cu(18)
-    #cost of Query in stage 1
-    query_cost=cu(3)
-    #cost of Report in stage 3
-    report_cost= cu(3)
-    #cost of pay the fine in stage 5
+    # cost of Query in stage 1
+    query_cost = cu(3)
+    # cost of Report in stage 3
+    report_cost = cu(3)
+    # cost of pay the fine in stage 5
     fine = cu(20)
 
     true_false_choices = [(1, 'True'), (0, 'False')]
     yes_no_choices = [(1, 'Yes'), (0, 'No')]
-    record_options= [(1, 'has unpaid fine'), (0, 'no unpaid fine')]
+    record_options = [(1, 'unpaid fine'), (0, 'no unpaid fine')]
 
 
 class Subsession(BaseSubsession):
@@ -62,7 +62,7 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     pair_id = models.IntegerField(initial=0)
-    #TODO comprehenstion test questions for two treatments
+    # TODO comprehenstion test questions for two treatments
     quiz1 = models.BooleanField(
         label='1. If you are the observer in current cycle, '
               'you will be an active participant in the next cycle for sure.',
@@ -83,37 +83,33 @@ class Player(BasePlayer):
         label="5. If you are an active participant, you will not know the identity of your matches.",
         choices=Constants.true_false_choices
     )
-    #stage 0 bribery decision
+    # stage 0 bribery decision
     bribery = models.CurrencyField(
         initial=0,
         label='''How much do you want to request from this active participants?''',
         min=0,
         max=Constants.betray_payoff
     )
-    #stage 1 query decision
-    query = models.StringField(
-        initial='NA',
+    # stage 1 query decision
+    query = models.BooleanField(
         choices=Constants.yes_no_choices,
         label=f"Do you want to spend {Constants.query_cost} to know whether your match has unpaid fine in the past?",
-        widget=widgets.RadioSelect
     )
-    #stage 2 PD decision
+    # stage 2 PD decision
     decision = models.StringField(
         initial='NA',
         choices=[['Action Y', 'Action Y'], ['Action Z', 'Action Z']],
         label="""This player's decision""",
         widget=widgets.RadioSelect
     )
-    #stage 3 report decision
-    report = models.StringField(
-        initial='NA',
+    # stage 3 report decision
+    report = models.BooleanField(
         choices=Constants.yes_no_choices,
         label=f"Do you want to spend {Constants.report_cost} to report your partner to the observer?",
         widget=widgets.RadioSelect
     )
-    #stage 5 pay fine decision
-    payfine = models.StringField(
-        initial='NA',
+    # stage 5 pay fine decision
+    payfine = models.BooleanField(
         choices=Constants.yes_no_choices,
         label=f"Do you want to give {Constants.fine} to your match?",
         widget=widgets.RadioSelect
@@ -126,10 +122,9 @@ class Player(BasePlayer):
     cycle_round_number = models.IntegerField(initial=1)
 
 
-
 # FUNCTIONS
 def creating_session(subsession: Subsession):
-    #generate treatment code of current session
+    # generate treatment code of current session
     honesty = subsession.session.config['honesty']
     # Importing modules needed
     from random import randint, shuffle, choices
@@ -154,15 +149,17 @@ def creating_session(subsession: Subsession):
             super_games_duration.append(n)
 
         subsession.session.vars['super_games_duration'] = super_games_duration
-        print('supergame duration:',super_games_duration)
+        print('supergame duration:', super_games_duration)
         # subsession.session.vars['super_games_end_rounds'] = list(accumulate(super_games_duration))
-        subsession.session.vars['super_games_end_rounds'] = [sum(super_games_duration[:i + 1]) for i in range(len(super_games_duration))]
-        print('supergames end at rounds:',subsession.session.vars['super_games_end_rounds'])
+        subsession.session.vars['super_games_end_rounds'] = [sum(super_games_duration[:i + 1]) for i in
+                                                             range(len(super_games_duration))]
+        print('supergames end at rounds:', subsession.session.vars['super_games_end_rounds'])
         # subsession.session.vars['super_games_start_rounds'] = [1] + [r + 1 for r in
         #                                                              subsession.session.vars['super_games_end_rounds'][
         #                                                              1:]]
-        subsession.session.vars['super_games_start_rounds'] = [sum(([1] + super_games_duration)[:i + 1]) for i in range(len(super_games_duration))]
-        print('supergames start at rounds:',subsession.session.vars['super_games_start_rounds'])
+        subsession.session.vars['super_games_start_rounds'] = [sum(([1] + super_games_duration)[:i + 1]) for i in
+                                                               range(len(super_games_duration))]
+        print('supergames start at rounds:', subsession.session.vars['super_games_start_rounds'])
 
         num_rounds_tot = sum(super_games_duration)
         if num_rounds_tot > const.num_rounds:
@@ -215,8 +212,8 @@ def set_pairs(subsession: Subsession, pair_ids: list, observer_num: int):
 # Get opponent player id
 def get_supergroup_previous_others(player: Player):
     supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
-    others=player.get_others_in_group()
-    group_history=[]
+    others = player.get_others_in_group()
+    group_history = []
     for o in others:
         other_history = []
         previous_others = o.in_rounds(supergame_first_round, player.round_number)
@@ -236,8 +233,9 @@ def get_supergroup_round_results(player: Player):
     round_results = []
     for o in others:
         partner = other_player(o)
-        result = dict(id=o.id_in_group, decision=o.decision, payoff=o.payoff, partner_id=partner.id_in_group,
-                      partner_decision=partner.decision, partner_payoff=partner.payoff)
+        result = dict(id=o.id_in_group, decision=o.decision, payoff=o.payoff, record=o.record, query=o.query,
+                      partner_id=partner.id_in_group, partner_decision=partner.decision,
+                      partner_payoff=partner.payoff, partner_record=partner.record, partner_query=partner.query)
         round_results.append(result)
     return round_results
 
@@ -269,7 +267,7 @@ def get_cycle_earning(player: Player):
             earning.append(payoff)
         cycle_earning = sum(earning)
     else:
-        cycle_earning=player.payoff
+        cycle_earning = player.payoff
     return cycle_earning
 
 
@@ -305,6 +303,17 @@ def set_payoff(player: Player):
             p.payoff = cu(17.5)
 
 
+# get a list of players who queried in stage 1
+def get_query_list(player: Player):
+    ls = []
+    for p in player.get_others_in_group():
+        if p.query:
+            ls.append('Player ' + str(p.id_in_group))
+    separator = ', '
+    query_list = separator.join(ls)
+    return query_list
+
+
 # PAGES
 class Introduction(Page):
     timeout_seconds = 100
@@ -324,7 +333,8 @@ class Instructions0(Page):
 
 class ComprehensionTest(Page):
     form_model = 'player'
-    form_fields = ['quiz1', 'quiz2', 'quiz3', 'quiz4','quiz5']
+    form_fields = ['quiz1', 'quiz2', 'quiz3', 'quiz4', 'quiz5']
+
     # instruction will be shown to players before they start the game
     @staticmethod
     def is_displayed(player: Player):
@@ -347,11 +357,13 @@ class AssignRole(Page):
         return player.round_number == player.session.vars['super_games_start_rounds'][
             player.subsession.curr_super_game - 1]
 
+
 class Stage0(Page):
-    #Bribery request page that will only show when honesty= 0
+    # Bribery request page that will only show when honesty= 0
     pass
 
-class Stage1Active(Page):
+
+class Stage1Query(Page):
     form_model = 'player'
     form_fields = ['query']
 
@@ -367,23 +379,99 @@ class Stage1Active(Page):
                         cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
                             player.subsession.curr_super_game - 1] + 1)
 
-class Stage1Observer(Page):
+
+class S1ObWait(WaitPage):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id == 0
+
+
+class S1AcWait(WaitPage):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id != 0
+
+
+class Stage1WaitPage(WaitPage):
     pass
 
+
+class Stage1Observer(Page):
+    # The decision page will only be displayed to observer
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id == 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id == 0:
+            # print(get_supergroup_round_results(player))
+            return dict(active_players_round_results=get_supergroup_round_results(player),
+                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1,
+                        query_list=get_query_list(player))
+
+
+class Stage1Outcome(Page):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id != 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        me = player
+        opponent = other_player(player)
+        return {
+            'my_record': me.record,
+            'opponent_record': opponent.record,
+            'me_query': me.query,
+            'partner_query': opponent.query,
+            'both_query': me.query == True and opponent.query == True,
+            'no_query': me.query == False and opponent.query == False,
+            'i_query': me.query ==True and opponent.query == False,
+            'he_query': me.query == False and opponent.query == True,
+        }
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id != 0:
+            return dict(past_players=get_previous_others(player),
+                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1)
+
+
 class Stage2(Page):
-    pass
+    form_model = 'player'
+    form_fields = ['decision']
+
+    @staticmethod
+    # The decision page will not be displayed to observer
+    def is_displayed(player: Player):
+        return player.pair_id != 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id != 0:
+            return dict(past_players=get_previous_others(player),
+                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1)
+
 
 class Stage3(Page):
     pass
 
+
 class Stage4(Page):
     pass
+
 
 class Stage5(Page):
     pass
 
+
 class Stage6(Page):
     pass
+
 
 class Decision(Page):
     form_model = 'player'
@@ -467,9 +555,9 @@ class EndRound(Page):
         if player.pair_id != 0:
             continuation_chance = int(round(Constants.delta * 100))
             if player.subsession.round_number in player.session.vars['super_games_end_rounds']:
-                print('xxxxx  supergame ends at',player.session.vars['super_games_end_rounds'])
-                print('xxxxx  supergame starts at',player.session.vars['super_games_start_rounds'])
-                print('xxxxx  supergame duration',player.session.vars['super_games_duration'])
+                print('xxxxx  supergame ends at', player.session.vars['super_games_end_rounds'])
+                print('xxxxx  supergame starts at', player.session.vars['super_games_start_rounds'])
+                print('xxxxx  supergame duration', player.session.vars['super_games_duration'])
                 dieroll = random.randint(continuation_chance + 1, 100)
             else:
                 dieroll = random.randint(1, continuation_chance)
@@ -500,7 +588,11 @@ page_sequence = [
     # Instructions0,
     # ComprehensionTest,
     AssignRole,
-    Stage1Active,
+    Stage1Query,
+    S1ObWait,
+    S1AcWait,
+    Stage1Observer,
+    Stage1Outcome,
     # Decision,
     # ResultsWaitPage,
     # Results,

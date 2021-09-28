@@ -1,0 +1,22 @@
+{{ block title }}
+Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 1&#8211; Your query choice
+{{ endblock }}
+{{ block content }}
+<p>{{my_record}}</p>
+
+<!--
+{{if me_query}}
+    <p>Both you and your match queried the observer.</p>
+{{elif no_query}}
+    <p>None of you queried the observer</p>
+
+{{elif i_query}}
+    <p>Only you queried the observer.</p>
+
+{{else}}
+    <p>Only your match queried the observer.</p> -->
+{{endif}}
+
+<button class="otree-btn-next btn btn-primary">Submit</button>
+
+{{ endblock }}
