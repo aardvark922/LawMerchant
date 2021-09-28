@@ -276,7 +276,7 @@ def set_payoff(player: Player):
         if p.pair_id != 0:
             p.payoff = payoff_matrix[p.decision][other_player(p).decision]
         else:
-            p.payoff = cu(17.5)
+            p.payoff = Constants.observer_payoff
 
 
 # PAGES

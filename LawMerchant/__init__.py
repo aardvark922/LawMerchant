@@ -40,14 +40,15 @@ class Constants(BaseConstants):
     # payoff for observer
     observer_payoff = cu(18)
     #cost of Query in stage 1
-    query_cost=cu(2.5)
+    query_cost=cu(3)
     #cost of Report in stage 3
-    report_cost= cu(2.5)
+    report_cost= cu(3)
     #cost of pay the fine in stage 5
     fine = cu(20)
 
     true_false_choices = [(1, 'True'), (0, 'False')]
     yes_no_choices = [(1, 'Yes'), (0, 'No')]
+    record_options= [(1, 'has unpaid fine'), (0, 'no unpaid fine')]
 
 
 class Subsession(BaseSubsession):
@@ -61,7 +62,7 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     pair_id = models.IntegerField(initial=0)
-    #TODO comprehenstion test question for two treatments
+    #TODO comprehenstion test questions for two treatments
     quiz1 = models.BooleanField(
         label='1. If you are the observer in current cycle, '
               'you will be an active participant in the next cycle for sure.',
@@ -85,16 +86,15 @@ class Player(BasePlayer):
     #stage 0 bribery decision
     bribery = models.CurrencyField(
         initial=0,
-        label='''Observer's bribery decision''',
+        label='''How much do you want to request from this active participants?''',
         min=0,
-        max=30,
-        widget=widgets.CheckboxInput
+        max=Constants.betray_payoff
     )
     #stage 1 query decision
     query = models.StringField(
         initial='NA',
         choices=Constants.yes_no_choices,
-        label="""This player's query decision""",
+        label=f"Do you want to spend {Constants.query_cost} to know whether your match has unpaid fine in the past?",
         widget=widgets.RadioSelect
     )
     #stage 2 PD decision
@@ -105,17 +105,22 @@ class Player(BasePlayer):
         widget=widgets.RadioSelect
     )
     #stage 3 report decision
-    report= models.StringField(
+    report = models.StringField(
         initial='NA',
         choices=Constants.yes_no_choices,
-        label="""This player's report decision""",
+        label=f"Do you want to spend {Constants.report_cost} to report your partner to the observer?",
         widget=widgets.RadioSelect
     )
     #stage 5 pay fine decision
-    payfine= models.StringField(
+    payfine = models.StringField(
         initial='NA',
         choices=Constants.yes_no_choices,
-        label="""This player's pay fine decision""",
+        label=f"Do you want to give {Constants.fine} to your match?",
+        widget=widgets.RadioSelect
+    )
+    record = models.StringField(
+        initial='no unpaid fine',
+        choices=Constants.record_options,
         widget=widgets.RadioSelect
     )
     cycle_round_number = models.IntegerField(initial=1)
@@ -181,7 +186,7 @@ def creating_session(subsession: Subsession):
         # Set list of list, where each sublist is a supergroup
         super_groups = [ps[n:n + const.super_group_size] for n in range(0, len(ps), const.super_group_size)]
         # print('current round number:', subsession.round_number)
-        # print('super groups:',super_groups)
+
         # Set group matrix in oTree based on the supergroups
         subsession.set_group_matrix(super_groups)
         # Call the set_pairs function
@@ -346,7 +351,23 @@ class Stage0(Page):
     #Bribery request page that will only show when honesty= 0
     pass
 
-class Stage1(Page):
+class Stage1Active(Page):
+    form_model = 'player'
+    form_fields = ['query']
+
+    @staticmethod
+    # The decision page will not be displayed to observer
+    def is_displayed(player: Player):
+        return player.pair_id != 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id != 0:
+            return dict(past_players=get_previous_others(player),
+                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1)
+
+class Stage1Observer(Page):
     pass
 
 class Stage2(Page):
@@ -479,12 +500,13 @@ page_sequence = [
     # Instructions0,
     # ComprehensionTest,
     AssignRole,
-    Decision,
-    ResultsWaitPage,
-    Results,
-    ObserverResults,
-    ObserverHistory,
-    EndRound,
-    EndCycle,
+    Stage1Active,
+    # Decision,
+    # ResultsWaitPage,
+    # Results,
+    # ObserverResults,
+    # ObserverHistory,
+    # EndRound,
+    # EndCycle,
     # End
 ]
