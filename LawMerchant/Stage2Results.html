@@ -1,0 +1,168 @@
+{% extends "global/Page.html" %}
+{% load otree %}
+
+{% block title %}
+    Cycle {{ subsession.curr_super_game }}, Round {{ subsession.round_number }}
+{% endblock %}
+
+{% block content %}
+<h4>Stage 2 Results</h4>
+{% if both_cooperate %}
+    <table class='table table-bordered text-center'
+           style='width: auto; margin: auto'>
+        <tr>
+            <th colspan=2 rowspan=2></th>
+            <th colspan=2 style="color: royalblue">The Other Participant</th>
+        </tr>
+        <tr>
+            <th style="color: royalblue">Action Y</th>
+            <th style="color: royalblue">Action Z</th>
+        </tr>
+        <tr>
+            <th rowspan=2><span style="color: indianred" class="rotate90">You</span></th>
+            <th style="color: indianred">Action Y</th>
+            <td><span style="font-weight: bold;color: indianred",>{{Constants.both_cooperate_payoff}}</span> ,
+                <span style="font-weight: bold;color: royalblue"> {{Constants.both_cooperate_payoff}} </span>
+            </td>
+
+            <td><span style="color: indianred">{{ Constants.betrayed_payoff }}</span> ,
+                <span style="color: royalblue"> {{Constants.betray_payoff}}</span>
+            </td>
+        </tr>
+        <tr>
+            <th style="color: indianred">Action Z</th>
+                <td><span style="color: indianred">{{Constants.betray_payoff}}</span>,
+                <span style="color: royalblue"> {{ Constants.betrayed_payoff }}</span>
+            </td>
+            <td><span style="color: indianred">{{Constants.both_defect_payoff}}</span>,
+                <span style="color: royalblue"> {{Constants.both_defect_payoff}}</span>
+            </td>
+        </tr>
+    </table>
+
+{% elif both_defect %}
+    <table class='table table-bordered text-center'
+           style='width: auto; margin: auto'>
+        <tr>
+            <th colspan=2 rowspan=2></th>
+            <th colspan=2 style="color: royalblue">The Other Participant</th>
+        </tr>
+        <tr>
+            <th style="color: royalblue">Action Y</th>
+            <th style="color: royalblue">Action Z</th>
+        </tr>
+        <tr>
+            <th rowspan=2><span class="rotate90"; style="color: indianred">You</span></th>
+            <th style="color: indianred">Action Y</th>
+            <td><span style="color: indianred"> {{ Constants.both_cooperate_payoff }}</span> ,
+                <span style="color: royalblue">{{ Constants.both_cooperate_payoff }}</span>
+                </td>
+            <td><span style="color: indianred"> {{ Constants.betrayed_payoff  }}</span>,
+                <span style="color: royalblue">{{ Constants.betray_payoff }}</span></td>
+        </tr>
+        <tr>
+            <th style="color: indianred">Action Z</th>
+            <td><span style="color: indianred">{{ Constants.betray_payoff }}</span>,
+                <span style="color: royalblue">{{ Constants.betrayed_payoff  }}</span></td>
+            <td bgcolor="#FFFF00" style="font-weight: bold">
+                <span style="color: indianred">{{ Constants.both_defect_payoff }}</span>,
+                <span style="color: royalblue">{{ Constants.both_defect_payoff }}</span>
+            </td>
+        </tr>
+    </table>
+
+{% elif i_cooperate_he_defects %}
+    <table class='table table-bordered text-center'
+           style='width: auto; margin: auto'>
+        <tr>
+            <th colspan=2 rowspan=2></th>
+            <th colspan=2 style="color: royalblue">The Other Participant</th>
+        </tr>
+        <tr>
+            <th style="color: royalblue">Action Y</th>
+            <th style="color: royalblue">Action Z</th>
+        </tr>
+        <tr>
+            <th rowspan=2><span class="rotate90", style="color: indianred">You</span></th>
+            <th style="color: indianred">Action Y</th>
+            <td><span style="color: indianred">{{ Constants.both_cooperate_payoff }}</span> ,
+                <span style="color: royalblue">{{ Constants.both_cooperate_payoff }}</span>
+            </td>
+            <td bgcolor="#FFFF00" style="font-weight: bold">
+                <span style="color: indianred">{{ Constants.betrayed_payoff  }}</span>,
+                <span style="color: royalblue">{{ Constants.betray_payoff }}</span>
+            </td>
+        </tr>
+        <tr>
+            <th style="color: indianred">Action Z</th>
+            <td><span style="color: indianred">{{ Constants.betray_payoff }}</span>,
+                <span style="color: royalblue">{{ Constants.betrayed_payoff  }}</span>
+            </td>
+            <td><span style="color: indianred">{{ Constants.both_defect_payoff }}</span>,
+                <span style="color: royalblue">{{ Constants.both_defect_payoff }}</span>
+            </td>
+        </tr>
+    </table>
+
+{% else %}
+    <table class='table table-bordered text-center'
+           style='width: auto; margin: auto'>
+        <tr>
+            <th colspan=2 rowspan=2></th>
+            <th colspan=2 style="color: royalblue">The Other Participant</th>
+        </tr>
+        <tr>
+            <th style="color: royalblue">Action Y</th>
+            <th style="color: royalblue">Action Z</th>
+        </tr>
+        <tr>
+            <th rowspan=2><span class="rotate90"; style="color: indianred">You</span></th>
+            <th style="color: indianred">Action Y</th>
+            <td><span style="color: indianred"> {{ Constants.both_cooperate_payoff }}</span> ,
+                <span style="color: royalblue"> {{ Constants.both_cooperate_payoff }}</span>
+            </td>
+            <td><span style="color: indianred">{{ Constants.betrayed_payoff  }}</span> ,
+                <span style="color: royalblue">{{ Constants.betray_payoff}}</span>
+            </td>
+        </tr>
+        <tr>
+            <th style="color: indianred">Action Z</th>
+            <td bgcolor="#FFFF00"  style="font-weight: bold"><span style="color: indianred">{{ Constants.betray_payoff }}</span> ,
+                <span style="color: royalblue">{{ Constants.betrayed_payoff  }}</span>
+            </td>
+            <td><span style="color: indianred"> {{ Constants.both_defect_payoff }}</span> ,
+                <span style="color: royalblue">{{ Constants.both_defect_payoff }}</span>
+            </td>
+        </tr>
+    </table>
+{% endif %}
+<br>
+    <p>
+        {% if same_choice %}
+            Both of you chose {{ my_decision }}. As a result, you earned {{ player.payoff }}.
+        {% else %}
+            You chose {{ my_decision }} and the other participant chose {{ opponent_decision }}.
+        As a result, you earned {{ player.payoff }}.
+        {% endif %}
+    </p>
+
+
+{{if no_query}}
+<p>Since none of you queried in Stage 1, your round end here.</p>
+{{elif he_query}}
+<p></p>
+{{else}}
+<h4>Stage 3 Your report decisioin</h4>
+<br>
+<p>You queried the <i>observer</i> in Stage 1.
+    Now you have the opportunity to report your partner to the <i>observer</i> .</p>
+    {{ formfields }}
+{{endif}}
+
+    {% next_button %}
+
+<!--
+    {% include Constants.instructions_template %}
+-->
+
+{% endblock %}

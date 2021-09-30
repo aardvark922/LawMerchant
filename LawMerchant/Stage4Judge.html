@@ -1,0 +1,49 @@
+{{ block title }}
+Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 4
+{{ endblock }}
+{{ block content }}
+<h5>Actions of <i>active participants</i> in Stage 2 in your set</h5>
+<table class="table", style="width: 600px">
+    <tr>
+        <th>ID</th>
+        <th>Choice</th>
+        <th>Earning</th>
+        <th>Match's ID</th>
+        <th>Match’s choice</th>
+        <th>Match’s earning</th>
+    </tr>
+    {{ for p in active_players_round_results }}
+    <tr>
+        <td style="font-weight: bold">{{ p.id }} </td>
+        <td>{{ p.decision }}</td>
+        <td>{{ p.payoff }}</td>
+        <td style="font-weight: bold">{{ p.partner_id }}</td>
+        <td>{{ p.partner_decision }}</td>
+        <td>{{ p.partner_payoff }}</td>
+
+    </tr>
+    {{ endfor }}
+</table>
+<br></br>
+<div><p>{{report_list}} reported. Now you will see whether each report is valid.</p>
+    <p><b>Remember:</b> A report is only valid if the reporter chose Action Y while his/her match chose Action Z.
+ </p>
+    {{ for p in active_players_round_results }}
+        {{if p.report}}
+            {{if p.decision == "Action Y" and p.partner_decision == "Action Z"}}
+
+                    <span style="font-weight: bold;color: darkred">Player {{p.id}}:</span>
+                    <ul style="color: darkred">  The report is valid</ul>
+                    <ul style="color: darkblue">Decision: Give fine to Player {{p.partner_id}}</ul>
+
+            {{else}}
+                    <span style="font-weight: bold;color: darkred">Player {{p.id}}:</span>
+                    <ul style="color: darkred">  The report is not valid</ul>
+                    <ul style="color: darkblue">Decision: Don't give fine to Player {{p.partner_id}}</ul>
+            {{endif}}
+        {{endif}}
+    {{endfor}}
+</div>
+<button class="otree-btn-next btn btn-primary">Submit</button>
+
+{{ endblock }}

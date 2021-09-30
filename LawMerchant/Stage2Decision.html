@@ -1,5 +1,5 @@
 {{ block title }}
-Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }} &#8211;Your choice
+Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 2 &#8211;Your choice
 {{ endblock }}
 {{ block content }}
 
@@ -19,10 +19,10 @@ Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }} &#8211;Yo
                 <input type="radio" id="Action Y" name="decision" value="Action Y">
                 <label for="Action Y"> I will choose<b style="color: indianred"> Action Y</b></label></td>
             </td>
-            <td><b style="color: indianred">{{Constants.both_cooperate_payoff}}</b> ,
+            <td><span style="color: indianred">{{Constants.both_cooperate_payoff}}</span> ,
                 <span style="color: royalblue"> {{Constants.both_cooperate_payoff}} </span>
             </td>
-            <td><b style="color: indianred">{{ Constants.betrayed_payoff }}</b> ,
+            <td><span style="color: indianred">{{ Constants.betrayed_payoff }}</span> ,
                 <span style="color: royalblue"> {{Constants.betray_payoff}}</span>
             </td>
         </tr>
@@ -30,10 +30,10 @@ Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }} &#8211;Yo
 
             <td><input type="radio" id="Action Z" name="decision" value="Action Z">
                 <label for="Action Z">I will choose<b style="color: indianred"> Action Z</b></label></td>
-            <td><b style="color: indianred">{{Constants.betray_payoff}}</b>,
+            <td><span style="color: indianred">{{Constants.betray_payoff}}</span>,
                 <span style="color: royalblue"> {{ Constants.betrayed_payoff }}</span>
             </td>
-            <td><b style="color: indianred">{{Constants.both_defect_payoff}}</b>,
+            <td><span style="color: indianred">{{Constants.both_defect_payoff}}</span>,
                 <span style="color: royalblue"> {{Constants.both_defect_payoff}}</span>
             </td>
         </tr>

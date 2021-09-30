@@ -2,21 +2,23 @@
 Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 1&#8211; Your query choice
 {{ endblock }}
 {{ block content }}
-<p>{{my_record}}</p>
 
-<!--
-{{if me_query}}
-    <p>Both you and your match queried the observer.</p>
+
+{{if both_query}}
+    <p>Both you and your match queried the observer. Here's the query outcome:</p>
+    <p>Your record: {{my_record}}. </p>
+    <p>Your match's record: has {{opponent_record}}. </p>
 {{elif no_query}}
-    <p>None of you queried the observer</p>
+    <p>None of you queried the observer. So no record will be shared with you.</p>
 
 {{elif i_query}}
-    <p>Only you queried the observer.</p>
+    <p>Only you queried the observer. Here's the query outcome:</p>
+    <p>Your match has {{opponent_record}}.</p>
 
 {{else}}
-    <p>Only your match queried the observer.</p> -->
+    <p>Only your match queried the observer. Here's the query outcome:</p>
+    <p>You have {{my_record}}.</p>
 {{endif}}
 
-<button class="otree-btn-next btn btn-primary">Submit</button>
-
+{{ next_button }}
 {{ endblock }}

@@ -105,12 +105,13 @@ class Player(BasePlayer):
     # stage 3 report decision
     report = models.BooleanField(
         choices=Constants.yes_no_choices,
+        initial=False,
         label=f"Do you want to spend {Constants.report_cost} to report your partner to the observer?",
-        widget=widgets.RadioSelect
     )
     # stage 5 pay fine decision
     payfine = models.BooleanField(
         choices=Constants.yes_no_choices,
+        initial=False,
         label=f"Do you want to give {Constants.fine} to your match?",
         widget=widgets.RadioSelect
     )
@@ -234,8 +235,9 @@ def get_supergroup_round_results(player: Player):
     for o in others:
         partner = other_player(o)
         result = dict(id=o.id_in_group, decision=o.decision, payoff=o.payoff, record=o.record, query=o.query,
-                      partner_id=partner.id_in_group, partner_decision=partner.decision,
-                      partner_payoff=partner.payoff, partner_record=partner.record, partner_query=partner.query)
+                      report=o.report, partner_id=partner.id_in_group, partner_decision=partner.decision,
+                      partner_payoff=partner.payoff, partner_record=partner.record, partner_query=partner.query,
+                      partner_report=partner.report)
         round_results.append(result)
     return round_results
 
@@ -265,9 +267,9 @@ def get_cycle_earning(player: Player):
         for m in previous_mes:
             payoff = m.payoff
             earning.append(payoff)
-        cycle_earning = sum(earning)
+        cycle_earning = sum(payoff)
     else:
-        cycle_earning = player.payoff
+        cycle_earning = player.round_earning
     return cycle_earning
 
 
@@ -303,6 +305,7 @@ def set_payoff(player: Player):
             p.payoff = cu(17.5)
 
 
+
 # get a list of players who queried in stage 1
 def get_query_list(player: Player):
     ls = []
@@ -314,6 +317,45 @@ def get_query_list(player: Player):
     return query_list
 
 
+# get a list of players who reported in stage 3
+def get_report_list(player: Player):
+    ls = []
+    for p in player.get_others_in_group():
+        if p.report:
+            ls.append('Player ' + str(p.id_in_group))
+    separator = ', '
+    report_list = separator.join(ls)
+    return report_list
+
+# get a list of players who rejects to pay fine in stage 5
+def get_reject_list(player: Player):
+    ls = []
+    for p in player.get_others_in_group():
+        partner = other_player(p)
+        if p.payfine is False and p.decision == "Action Z" and partner.decision == "Action Y":
+            ls.append('Player ' + str(p.id_in_group))
+    separator = ', '
+    reject_list = separator.join(ls)
+    return reject_list
+
+def get_reject_id(player:Player):
+    reject_id=[]
+    for p in player.get_others_in_group():
+        partner = other_player(p)
+        if p.payfine is False and p.decision == "Action Z" and partner.decision == "Action Y":
+            reject_id.append(p.id_in_group)
+    return reject_id
+
+
+def update_records(group:Group):
+    for p in group.get_players():
+        update_record(p)
+
+def update_record(player: Player):
+    #only update record if ac rejects to pay fine and the report is valid
+    partner = other_player(player)
+    if player.payfine is False and player.decision == "Action Z" and partner.decision == "Action Y":
+        player.record = 'unpaid fine'
 # PAGES
 class Introduction(Page):
     timeout_seconds = 100
@@ -391,11 +433,6 @@ class S1AcWait(WaitPage):
     def is_displayed(player: Player):
         return player.pair_id != 0
 
-
-class Stage1WaitPage(WaitPage):
-    pass
-
-
 class Stage1Observer(Page):
     # The decision page will only be displayed to observer
     @staticmethod
@@ -428,67 +465,146 @@ class Stage1Outcome(Page):
             'partner_query': opponent.query,
             'both_query': me.query == True and opponent.query == True,
             'no_query': me.query == False and opponent.query == False,
-            'i_query': me.query ==True and opponent.query == False,
+            'i_query': me.query == True and opponent.query == False,
+            'he_query': me.query == False and opponent.query == True,
+            'cycle_round_number': player.round_number - player.session.vars['super_games_start_rounds'][
+                player.subsession.curr_super_game - 1] + 1
+        }
+
+
+class Stage2Decision(Page):
+    form_model = 'player'
+    form_fields = ['decision']
+
+    @staticmethod
+    # The decision page will not be displayed to observer
+    def is_displayed(player: Player):
+        return player.pair_id != 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id != 0:
+            return dict(past_players=get_previous_others(player),
+                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1)
+
+
+class Stage2Results(Page):
+    form_model = 'player'
+
+    # report option will only be available to whoever queried in s1
+    @staticmethod
+    def get_form_fields(player):
+        if player.query:
+            return ['report']
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id != 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        me = player
+        opponent = other_player(player)  # TODO: How do I get the other player
+        return {
+            'my_decision': me.decision,
+            'opponent_decision': opponent.decision,
+            'same_choice': me.decision == opponent.decision,
+            'both_cooperate': me.decision == "Action Y" and opponent.decision == "Action Y",
+            'both_defect': me.decision == "Action Z" and opponent.decision == "Action Z",
+            'i_cooperate_he_defects': me.decision == "Action Y" and opponent.decision == "Action Z",
+            'i_defect_he_cooperates': me.decision == "Action Z" and opponent.decision == "Action Y",
+            'me_query': me.query,
+            'partner_query': opponent.query,
+            'both_query': me.query == True and opponent.query == True,
+            'no_query': me.query == False and opponent.query == False,
+            'i_query': me.query == True and opponent.query == False,
             'he_query': me.query == False and opponent.query == True,
         }
 
+class S3ObWait(WaitPage):
     @staticmethod
-    def vars_for_template(player: Player):
-        if player.pair_id != 0:
-            return dict(past_players=get_previous_others(player),
-                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
-                            player.subsession.curr_super_game - 1] + 1)
+    def is_displayed(player: Player):
+        return player.pair_id == 0
 
-
-class Stage2(Page):
-    form_model = 'player'
-    form_fields = ['decision']
-
+class S3AcWait(WaitPage):
+    #active participants wait while observer in stage 4 makes judgement
     @staticmethod
-    # The decision page will not be displayed to observer
     def is_displayed(player: Player):
         return player.pair_id != 0
 
+
+class Stage4Judge(Page):
+    # The decision page will only be displayed to observer
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id == 0
+
     @staticmethod
     def vars_for_template(player: Player):
-        if player.pair_id != 0:
-            return dict(past_players=get_previous_others(player),
+        if player.pair_id == 0:
+            # print(get_supergroup_round_results(player))
+            return dict(active_players_round_results=get_supergroup_round_results(player),
                         cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
-                            player.subsession.curr_super_game - 1] + 1)
+                            player.subsession.curr_super_game - 1] + 1,
+                        report_list=get_report_list(player))
 
-
-class Stage3(Page):
-    pass
-
-
-class Stage4(Page):
-    pass
-
-
-class Stage5(Page):
-    pass
-
-
-class Stage6(Page):
-    pass
-
-
-class Decision(Page):
-    form_model = 'player'
-    form_fields = ['decision']
-
+class S4ObWait(WaitPage):
     @staticmethod
-    # The decision page will not be displayed to observer
+    def is_displayed(player: Player):
+        return player.pair_id == 0
+
+class S4AcWait(WaitPage):
+    #active participants wait while observer in stage 4 makes judgement
+    @staticmethod
     def is_displayed(player: Player):
         return player.pair_id != 0
 
+class Stage5Fine(Page):
+    form_model = 'player'
+    form_fields = ['payfine']
+    #This page will only displayed to an active participant who has been reported by his match and the report is valid
+    @staticmethod
+    def is_displayed(player: Player):
+        opponent = other_player(player)
+        return player.pair_id != 0 and opponent.report == True \
+               and player.decision == "Action Z" \
+               and opponent.decision == "Action Y"
+
     @staticmethod
     def vars_for_template(player: Player):
         if player.pair_id != 0:
-            return dict(past_players=get_previous_others(player),
-                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
-                            player.subsession.curr_super_game - 1] + 1)
+            # print(get_supergroup_round_results(player))
+            return dict(cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1,)
 
+class S5ObWait(WaitPage):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id == 0
+
+class S5AcWait(WaitPage):
+    #active participants wait while observer in stage 4 makes judgement
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id != 0
+
+class Stage6Update(Page):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id == 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id == 0:
+            # print(get_supergroup_round_results(player))
+            return dict(active_players_round_results=get_supergroup_round_results(player),
+                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1,
+                        reject_list=get_reject_list(player), reject_id = get_reject_id(player))
+
+class RecordsWaitPage(WaitPage):
+    after_all_players_arrive = update_records
 
 class ResultsWaitPage(WaitPage):
     after_all_players_arrive = set_payoffs
@@ -523,26 +639,6 @@ class ObserverHistory(Page):
                             player.subsession.curr_super_game - 1] + 1,
                         start_round=player.session.vars['super_games_start_rounds'][
                             player.subsession.curr_super_game - 1])
-
-
-class Results(Page):
-    @staticmethod
-    def is_displayed(player: Player):
-        return player.pair_id != 0
-
-    @staticmethod
-    def vars_for_template(player: Player):
-        me = player
-        opponent = other_player(player)  # TODO: How do I get the other player
-        return {
-            'my_decision': me.decision,
-            'opponent_decision': opponent.decision,
-            'same_choice': me.decision == opponent.decision,
-            'both_cooperate': me.decision == "Action Y" and opponent.decision == "Action Y",
-            'both_defect': me.decision == "Action Z" and opponent.decision == "Action Z",
-            'i_cooperate_he_defects': me.decision == "Action Y" and opponent.decision == "Action Z",
-            'i_defect_he_cooperates': me.decision == "Action Z" and opponent.decision == "Action Y",
-        }
 
 
 class EndRound(Page):
@@ -593,12 +689,22 @@ page_sequence = [
     S1AcWait,
     Stage1Observer,
     Stage1Outcome,
-    # Decision,
-    # ResultsWaitPage,
-    # Results,
+    Stage2Decision,
+    ResultsWaitPage,
+    Stage2Results,
+    S3ObWait,
+    S3AcWait,
+    Stage4Judge,
+    S4ObWait,
+    S4AcWait,
+    Stage5Fine,
+    S5ObWait,
+    RecordsWaitPage,
+    Stage6Update,
+
     # ObserverResults,
     # ObserverHistory,
-    # EndRound,
+     EndRound,
     # EndCycle,
     # End
 ]
