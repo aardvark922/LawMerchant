@@ -15,23 +15,11 @@ class Constants(BaseConstants):
     instructions_template = 'control/instructions.html'
     summary_template = 'control/summary.html'
     players_per_group = None
-    num_super_games = 5
-    delta = 0.70  # discount factor equals to 0.90
+    num_super_games = 3
+    delta = 0.50  # discount factor equals to 0.90
 
     time_limit = 60 * 20
     time_limit_seconds = 60 * 20
-
-
-    # generate a list of supergame lengths
-
-    # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
-    # super_game_duration = [int(s) for s in super_game_duration]
-
-    # TODO: can I implement the following without using numpy?
-    # TODO: how to implement block random termination?
-    # super_game_duration = list(np.random.geometric(p=(1 - delta), size=num_super_games))
-    # super_game_duration = [int(s) for s in super_game_duration]
-    # TODO: seems that delta in the last line could not be recognized by python or otree?
 
     # List of starting round for each super game
     # super_games_start_round = [1]
@@ -189,7 +177,7 @@ def set_pairs(subsession: Subsession, pair_ids: list, observer_num: int):
 # Get opponent player id
 def get_supergroup_previous_others(player: Player):
     supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
-    others=player.get_others_in_group()
+    others = player.get_others_in_group()
     group_history=[]
     for o in others:
         other_history = []
@@ -246,6 +234,28 @@ def get_cycle_earning(player: Player):
         cycle_earning=player.payoff
     return cycle_earning
 
+def cycle_earning_list(player:Player):
+
+    cycle_earning_list=[]
+    cycle_num=1
+    for c in range ( Constants.num_super_games):
+        supergame_first_round = player.session.vars['super_games_start_rounds'][c]
+        supergame_last_round = player.session.vars['super_games_end_rounds'][c]
+        if supergame_last_round != supergame_first_round:
+            # To prevent the case when a cycle only lasts for one period
+            previous_mes = player.in_rounds(supergame_first_round, supergame_last_round)
+            earning = []
+            for m in previous_mes:
+                payoff = m.payoff
+                earning.append(payoff)
+            cycle_tot = sum(earning)
+        else:
+            cycle_tot = player.in_round(supergame_first_round).payoff
+
+        cycle_earning_summary= dict(cycle_number=cycle_num,cycle_earning= cycle_tot)
+        cycle_earning_list.append(cycle_earning_summary)
+        cycle_num = cycle_num+1
+    return cycle_earning_list
 
 # Get opponent player id
 def other_player(player: Player):
@@ -391,6 +401,8 @@ class Results(Page):
             'both_defect': me.decision == "Action Z" and opponent.decision == "Action Z",
             'i_cooperate_he_defects': me.decision == "Action Y" and opponent.decision == "Action Z",
             'i_defect_he_cooperates': me.decision == "Action Z" and opponent.decision == "Action Y",
+            'cycle_round_number':player.round_number - player.session.vars['super_games_start_rounds'][
+            player.subsession.curr_super_game - 1] + 1
         }
 
 
@@ -411,7 +423,10 @@ class EndRound(Page):
             else:
                 dieroll = random.randint(1, continuation_chance)
             return dict(dieroll=dieroll, continuation_chance=continuation_chance,
-                        die_threshold_plus_one=continuation_chance + 1, )
+                        die_threshold_plus_one=continuation_chance + 1,
+                        cycle_round_number= player.round_number - player.session.vars['super_games_start_rounds'][
+                player.subsession.curr_super_game - 1] + 1
+            )
             # print(get_supergroup_round_results(player))
 
 
@@ -429,7 +444,16 @@ class EndCycle(Page):
 class End(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.session.vars['alive'] is False or player.subsession.round_number == Constants.last_round
+        return player.round_number == player.session.vars['super_games_end_rounds'][
+            Constants.num_super_games-1]
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return dict(last_round=sum(player.session.vars['super_games_duration']),
+                    conversion_rate=player.session.config['real_world_currency_per_point'],
+                    participation_fee=player.session.config['participation_fee'],
+                    cycle_earning_list=cycle_earning_list(player))
+
 
 
 page_sequence = [
@@ -444,5 +468,5 @@ page_sequence = [
     ObserverHistory,
     EndRound,
     EndCycle,
-    # End
+    End
 ]

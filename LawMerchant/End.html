@@ -7,23 +7,34 @@
 
 {% block content %}
 
-{% if subsession.round_number == Constants.last_round %}
+<p>This ends Cycle {{Constants.num_super_games }} and, thus, ends the experiment.</p>
 
-<p>This ends match {{Constants.num_matches}} and, thus, ends the experiment.</p>
+<p>Below shows a summary of your earnings in each cycle</p>
+<table  border="0" cellpadding="0" cellspacing="0" width="200px" class="scrollTable">
+    <thead class="fixedHeader">
+    <tr class="alternateRow">
+        <th>Cycle</th>
+        <th>Earning</th>
+    </tr>
+    </thead>
+    <tbody class="scrollContent">
+       {{ for c in cycle_earning_list }}
+    <tr>
+        <td class="normalRow">{{ c.cycle_number }}</td>
+        <td>{{ c.cycle_earning }}</td>
+    </tr>
+        {{ endfor }}
+    </tbody>
 
-<p>We will start payments shortly. Please wait quietly at your seat until the experimenter calls your computer station number.</p>
+</table>
+<br>
+<p>The sum of your earnings across cycles is {{participant.payoff}}. The exchange rate is 1 point = ${{conversion_rate}}. You also receive
+    {{participation_fee}} for participating our experiment. </p>
 
+<p>    In total, your payment for this experiment is <b>{{participant.payoff_plus_participation_fee()}}</b> </p>
 <p>Thank you very much for your participation!</p>
 
-{% else %}
-
-<p>This is the first match to end after 1 hour of play. Thus, this is the end of the experiment.</p>
-
 <p>We will start payments shortly. Please wait quietly at your seat until the experimenter calls your computer station number.</p>
-
-<p>Thank you very much for your participation!</p>
-
-{% endif %}
 
 {% endblock %}
 

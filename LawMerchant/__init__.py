@@ -272,6 +272,28 @@ def get_cycle_earning(player: Player):
         cycle_earning = player.round_earning
     return cycle_earning
 
+def cycle_earning_list(player:Player):
+
+    cycle_earning_list=[]
+    cycle_num=1
+    for c in range ( Constants.num_super_games):
+        supergame_first_round = player.session.vars['super_games_start_rounds'][c]
+        supergame_last_round = player.session.vars['super_games_end_rounds'][c]
+        if supergame_last_round != supergame_first_round:
+            # To prevent the case when a cycle only lasts for one period
+            previous_mes = player.in_rounds(supergame_first_round, supergame_last_round)
+            earning = []
+            for m in previous_mes:
+                payoff = m.payoff
+                earning.append(payoff)
+            cycle_tot = sum(earning)
+        else:
+            cycle_tot = player.in_round(supergame_first_round).payoff
+
+        cycle_earning_summary= dict(cycle_number=cycle_num,cycle_earning= cycle_tot)
+        cycle_earning_list.append(cycle_earning_summary)
+        cycle_num = cycle_num+1
+    return cycle_earning_list
 
 # Get opponent player id
 def other_player(player: Player):
@@ -520,6 +542,8 @@ class Stage2Results(Page):
             'no_query': me.query == False and opponent.query == False,
             'i_query': me.query == True and opponent.query == False,
             'he_query': me.query == False and opponent.query == True,
+            'cycle_round_number': player.round_number - player.session.vars['super_games_start_rounds'][
+                player.subsession.curr_super_game - 1] + 1
         }
 
 class S3ObWait(WaitPage):
@@ -658,7 +682,10 @@ class EndRound(Page):
             else:
                 dieroll = random.randint(1, continuation_chance)
             return dict(dieroll=dieroll, continuation_chance=continuation_chance,
-                        die_threshold_plus_one=continuation_chance + 1, )
+                        die_threshold_plus_one=continuation_chance + 1,
+                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1
+                        )
             # print(get_supergroup_round_results(player))
 
 
@@ -676,7 +703,15 @@ class EndCycle(Page):
 class End(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.session.vars['alive'] is False or player.subsession.round_number == Constants.last_round
+        return player.round_number == player.session.vars['super_games_end_rounds'][
+            Constants.num_super_games-1]
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return dict(last_round=sum(player.session.vars['super_games_duration']),
+                    conversion_rate=player.session.config['real_world_currency_per_point'],
+                    participation_fee=player.session.config['participation_fee'],
+                    cycle_earning_list=cycle_earning_list(player))
 
 
 page_sequence = [

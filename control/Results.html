@@ -2,7 +2,7 @@
 {% load otree %}
 
 {% block title %}
-    Cycle {{ subsession.curr_super_game }}, Round {{ subsession.round_number }} &#8211; Results
+    Cycle {{ subsession.curr_super_game }}, Round {{  cycle_round_number }} &#8211; Results
 {% endblock %}
 
 {% block content %}
@@ -12,25 +12,31 @@
            style='width: auto; margin: auto'>
         <tr>
             <th colspan=2 rowspan=2></th>
-            <th colspan=2>The Other Participant</th>
+            <th colspan=2 style="color: royalblue">The Other Participant</th>
         </tr>
         <tr>
-            <th>Action Y</th>
-            <th>Action Z</th>
+            <th style="color: royalblue">Action Y</th>
+            <th style="color: royalblue">Action Z</th>
         </tr>
         <tr>
-            <th rowspan=2><span class="rotate90">You</span></th>
-            <th>Action Y</th>
-            <td bgcolor="#FFFF00" style="font-weight: bold;color: darkred">
-                {{ Constants.both_cooperate_payoff }}, {{ Constants.both_cooperate_payoff }}
+            <th rowspan=2><span style="color: indianred" class="rotate90">You</span></th>
+            <th style="color: indianred">Action Y</th>
+            <td><span style="font-weight: bold;color: indianred",>{{Constants.both_cooperate_payoff}}</span> ,
+                <span style="font-weight: bold;color: royalblue"> {{Constants.both_cooperate_payoff}} </span>
             </td>
 
-            <td>{{ Constants.betrayed_payoff  }}, {{ Constants.betray_payoff }}</td>
+            <td><span style="color: indianred">{{ Constants.betrayed_payoff }}</span> ,
+                <span style="color: royalblue"> {{Constants.betray_payoff}}</span>
+            </td>
         </tr>
         <tr>
-            <th>Action Z</th>
-            <td>{{ Constants.betray_payoff }}, {{ Constants.betrayed_payoff  }}</td>
-            <td>{{ Constants.both_defect_payoff }}, {{ Constants.both_defect_payoff }}</td>
+            <th style="color: indianred">Action Z</th>
+                <td><span style="color: indianred">{{Constants.betray_payoff}}</span>,
+                <span style="color: royalblue"> {{ Constants.betrayed_payoff }}</span>
+            </td>
+            <td><span style="color: indianred">{{Constants.both_defect_payoff}}</span>,
+                <span style="color: royalblue"> {{Constants.both_defect_payoff}}</span>
+            </td>
         </tr>
     </table>
 
@@ -39,23 +45,28 @@
            style='width: auto; margin: auto'>
         <tr>
             <th colspan=2 rowspan=2></th>
-            <th colspan=2>The Other Participant</th>
+            <th colspan=2 style="color: royalblue">The Other Participant</th>
         </tr>
         <tr>
-            <th>Action Y</th>
-            <th>Action Z</th>
+            <th style="color: royalblue">Action Y</th>
+            <th style="color: royalblue">Action Z</th>
         </tr>
         <tr>
-            <th rowspan=2><span class="rotate90">You</span></th>
-            <th>Action Y</th>
-            <td>{{ Constants.both_cooperate_payoff }}, {{ Constants.both_cooperate_payoff }}</td>
-            <td>{{ Constants.betrayed_payoff  }}, {{ Constants.betray_payoff }}</td>
+            <th rowspan=2><span class="rotate90"; style="color: indianred">You</span></th>
+            <th style="color: indianred">Action Y</th>
+            <td><span style="color: indianred"> {{ Constants.both_cooperate_payoff }}</span> ,
+                <span style="color: royalblue">{{ Constants.both_cooperate_payoff }}</span>
+                </td>
+            <td><span style="color: indianred"> {{ Constants.betrayed_payoff  }}</span>,
+                <span style="color: royalblue">{{ Constants.betray_payoff }}</span></td>
         </tr>
         <tr>
-            <th>Action Z</th>
-            <td>{{ Constants.betray_payoff }}, {{ Constants.betrayed_payoff  }}</td>
-            <td bgcolor="#FFFF00" style="font-weight: bold;color: darkred">
-                {{ Constants.both_defect_payoff }}, {{ Constants.both_defect_payoff }}
+            <th style="color: indianred">Action Z</th>
+            <td><span style="color: indianred">{{ Constants.betray_payoff }}</span>,
+                <span style="color: royalblue">{{ Constants.betrayed_payoff  }}</span></td>
+            <td bgcolor="#FFFF00" style="font-weight: bold">
+                <span style="color: indianred">{{ Constants.both_defect_payoff }}</span>,
+                <span style="color: royalblue">{{ Constants.both_defect_payoff }}</span>
             </td>
         </tr>
     </table>
@@ -65,24 +76,31 @@
            style='width: auto; margin: auto'>
         <tr>
             <th colspan=2 rowspan=2></th>
-            <th colspan=2>The Other Participant</th>
+            <th colspan=2 style="color: royalblue">The Other Participant</th>
         </tr>
         <tr>
-            <th>Action Y</th>
-            <th>Action Z</th>
+            <th style="color: royalblue">Action Y</th>
+            <th style="color: royalblue">Action Z</th>
         </tr>
         <tr>
-            <th rowspan=2><span class="rotate90">You</span></th>
-            <th>Action Y</th>
-            <td>{{ Constants.both_cooperate_payoff }}, {{ Constants.both_cooperate_payoff }}</td>
-            <td bgcolor="#FFFF00" style="font-weight: bold;color: darkred">
-                {{ Constants.betrayed_payoff  }}, {{ Constants.betray_payoff }}
+            <th rowspan=2><span class="rotate90", style="color: indianred">You</span></th>
+            <th style="color: indianred">Action Y</th>
+            <td><span style="color: indianred">{{ Constants.both_cooperate_payoff }}</span> ,
+                <span style="color: royalblue">{{ Constants.both_cooperate_payoff }}</span>
+            </td>
+            <td bgcolor="#FFFF00" style="font-weight: bold">
+                <span style="color: indianred">{{ Constants.betrayed_payoff  }}</span>,
+                <span style="color: royalblue">{{ Constants.betray_payoff }}</span>
             </td>
         </tr>
         <tr>
-            <th>Action Z</th>
-            <td>{{ Constants.betray_payoff }}, {{ Constants.betrayed_payoff  }}</td>
-            <td>{{ Constants.both_defect_payoff }}, {{ Constants.both_defect_payoff }}</td>
+            <th style="color: indianred">Action Z</th>
+            <td><span style="color: indianred">{{ Constants.betray_payoff }}</span>,
+                <span style="color: royalblue">{{ Constants.betrayed_payoff  }}</span>
+            </td>
+            <td><span style="color: indianred">{{ Constants.both_defect_payoff }}</span>,
+                <span style="color: royalblue">{{ Constants.both_defect_payoff }}</span>
+            </td>
         </tr>
     </table>
 
@@ -91,25 +109,32 @@
            style='width: auto; margin: auto'>
         <tr>
             <th colspan=2 rowspan=2></th>
-            <th colspan=2>The Other Participant</th>
+            <th colspan=2 style="color: royalblue">The Other Participant</th>
         </tr>
         <tr>
-            <th>Action Y</th>
-            <th>Action Z</th>
+            <th style="color: royalblue">Action Y</th>
+            <th style="color: royalblue">Action Z</th>
         </tr>
         <tr>
-            <th rowspan=2><span class="rotate90">You</span></th>
-            <th>Action Y</th>
-            <td>{{ Constants.both_cooperate_payoff }}, {{ Constants.both_cooperate_payoff }}</td>
-            <td>{{ Constants.betrayed_payoff  }}, {{ Constants.betray_payoff }}</td>
+            <th rowspan=2><span class="rotate90"; style="color: indianred">You</span></th>
+            <th style="color: indianred">Action Y</th>
+            <td><span style="color: indianred"> {{ Constants.both_cooperate_payoff }}</span> ,
+                <span style="color: royalblue"> {{ Constants.both_cooperate_payoff }}</span>
+            </td>
+            <td><span style="color: indianred">{{ Constants.betrayed_payoff  }}</span> ,
+                <span style="color: royalblue">{{ Constants.betray_payoff}}</span>
+            </td>
         </tr>
         <tr>
-            <th>Action Z</th>
-            <td bgcolor="#FFFF00"  style="font-weight: bold;color: darkred">{{ Constants.betray_payoff }}, {{ Constants.betrayed_payoff  }}</td>
-            <td>{{ Constants.both_defect_payoff }}, {{ Constants.both_defect_payoff }}</td>
+            <th style="color: indianred">Action Z</th>
+            <td bgcolor="#FFFF00"  style="font-weight: bold"><span style="color: indianred">{{ Constants.betray_payoff }}</span> ,
+                <span style="color: royalblue">{{ Constants.betrayed_payoff  }}</span>
+            </td>
+            <td><span style="color: indianred"> {{ Constants.both_defect_payoff }}</span> ,
+                <span style="color: royalblue">{{ Constants.both_defect_payoff }}</span>
+            </td>
         </tr>
     </table>
-
 {% endif %}
     <p>
         {% if same_choice %}
