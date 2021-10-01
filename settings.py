@@ -9,13 +9,13 @@ SESSION_CONFIGS = [
     dict(
          name='honest',
          app_sequence=['LawMerchant'],
-         honesty=True,
+         dishonesty=False,
          num_demo_participants=14,
      ),
     dict(
          name='dishonest',
          app_sequence=['LawMerchant'],
-         honesty=False,
+         dishonesty=True,
          num_demo_participants=14,
      ),
 

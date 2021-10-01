@@ -1,0 +1,40 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{{ block title }}
+    Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number}} &#8211; Results
+{{  endblock }}
+
+{{ block content }}
+<p>query choice: {{my_query}}. Query payment: {{query_payment}}</p>
+<p>bribery choice: {{my_bribery }}</p>
+<p>report choice: {{my_report}}</p>
+<p>pay fine choice: {{my_payfine}}</p>
+<p>receive fine: {{my_receivefine}}</p>
+<p>earning from this round: {{my_earning}}</p>
+
+{{if both_cooperate}}
+Your earning from stage 2 is {{Constants.both_cooperate_payoff}}.
+{{elif both_defect}}
+Your earning from stage 2 is {{Constants.both_defect_payoff}}.
+{{elif i_cooperate_he_defects}}
+Your earning from stage 2 is {{Constants.betrayed_payoff}}.
+{{else}}
+Your earning from stage 2 is {{ Constants.betray_payoff}}.
+{{endif}}
+
+
+
+
+{{next_button}}
+{{ endblock }}
+
+{% block styles %}
+    <style>
+
+.otree-timer {
+    display: none;
+}
+    </style>
+{% endblock %}
+

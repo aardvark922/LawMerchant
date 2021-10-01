@@ -8,10 +8,10 @@
 {% block content %}
     <p> The computer rolled a 100-sided die to determine whether the match is over or continues to another round.</p>
     {{if subsession.round_number in session.vars.super_games_end_rounds  }}
-        <p>The die roll was <b style="color: darkred">{{ dieroll }}.</p>
+<p>The die roll was <b style="color: darkred">{{ dieroll }}</b>.</p>
         <p>Since the die roll was greater than {{ continuation_chance }}, the match is over.</p>
     {% else %}
-        <p>The die roll was <b style="color: darkred">{{ dieroll }}.
+<p>The die roll was <b style="color: darkred">{{ dieroll }}</b>.</p>
         <p>Since the die roll was less than or equal to {{ continuation_chance }}, the match continues to another round.</p>
     {%  endif %}
 

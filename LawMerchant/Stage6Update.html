@@ -1,30 +1,62 @@
 {{ block title }}
 Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }} &#8211;Your choice
 {{ endblock }}
-{{ block content }}
 
-<p>{{reject_list}} rejected to pay fine. Below shows the updated record of <i>active participants</i> in your set.</p>
+{{ block content }}
+{{if reject_list and payfine_list}}
+<p>{{reject_list}} rejected to pay fine. {{payfine_list}} accepted to pay fine.
+    Below shows the updated record of <i>active participants</i> in your set.</p>
 <h5>Updated record of <span style="font-style: italic">active participants</span> in your set</h5>
 <table class="table" style="width: 400px">
     <tr>
-        <th >ID</th>
-        <th >Record</th>
+        <th>ID</th>
+        <th>Record</th>
     </tr>
     {{ for p in active_players_round_results }}
-        {{if p.id in reject_id}}
+    {{if p.id in reject_id}}
     <tr>
-        <td style="font-weight: bold; color: darkred">{{ p.id }} </td>
+        <td style="font-weight: bold; color: darkred">{{ p.id }}</td>
         <td style="color: darkred">{{ p.record }}</td>
     </tr>
     {{else}}
-     <tr>
-        <td style="font-weight: bold">{{ p.id }} </td>
-        <td >{{ p.record }}</td>
+    <tr>
+        <td style="font-weight: bold">{{ p.id }}</td>
+        <td>{{ p.record }}</td>
     </tr>
     {{endif}}
     {{ endfor }}
 </table>
 
+{{elif reject_list and not payfine_list }}
+<p>{{reject_list}} rejected to pay fine.
+    Below shows the updated record of <i>active participants</i> in your set.</p>
+<h5>Updated record of <span style="font-style: italic">active participants</span> in your set</h5>
+<table class="table" style="width: 400px">
+    <tr>
+        <th>ID</th>
+        <th>Record</th>
+    </tr>
+    {{ for p in active_players_round_results }}
+    {{if p.id in reject_id}}
+    <tr>
+        <td style="font-weight: bold; color: darkred">{{ p.id }}</td>
+        <td style="color: darkred">{{ p.record }}</td>
+    </tr>
+    {{else}}
+    <tr>
+        <td style="font-weight: bold">{{ p.id }}</td>
+        <td>{{ p.record }}</td>
+    </tr>
+    {{endif}}
+    {{ endfor }}
+</table>
+
+{{elif not reject_list and payfine_list}}
+<p>{{payfine_list}} accepted to pay fine. No record will be updated in this round.</p>
+
+{{else}}
+<p>No record will be updated in this round.</p>
+{{endif}}
 
 <button class="otree-btn-next btn btn-primary">Submit</button>
 

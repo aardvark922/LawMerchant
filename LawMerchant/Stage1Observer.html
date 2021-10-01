@@ -14,7 +14,7 @@ Query from <span style="font-style: italic">active participants</span>
     </tr>
     {{ for p in active_players_round_results }}
     <tr>
-        <td style="font-weight: bold; color: darkred">{{ p.id }} </td>
+        <td style="font-weight: bold; color: darkred">{{ p.id }}</td>
         <td style="color: darkred">{{ p.record }}</td>
         <td style="font-weight: bold; color: darkblue">{{ p.partner_id }}</td>
         <td style="color: darkblue">{{ p.partner_record }}</td>
@@ -22,28 +22,37 @@ Query from <span style="font-style: italic">active participants</span>
     </tr>
     {{ endfor }}
 </table>
-<br></br>
-<div><p>{{query_list}} queried. Now you will send the following messages to them and their match.</p>
-    {{ for p in active_players_round_results }}
-        {{if p.query}}
-            {{if p.partner_query}}
+<br>
 
-                    <span style="font-weight: bold;color: darkred">Player {{p.id}}:</span>
-                    <ul style="color: darkred">  Your match has {{p.partner_record}}.</ul>
-                    <ul style="color: darkblue">You have been queried. You have {{p.record}}</ul>
+<p>{{query_list}} queried. The table below shows the messages to be sent.</p>
+
+<table class="table" style="width: 600px; height: 200px">
+    <tr>
+        <th>ID</th>
+        <th>Message to send</th>
+    </tr>
+    {{ for p in active_players_round_results }}
+    <tr>
+        <td style="font-weight: bold">{{ p.id }}</td>
+        <td>
+            {{if p.query and p.partner_query}}
+                Your have {{p.record}}.
+                Your match's has {{p.partner_record}}.
+            {{elif not p.query and not p.partner_query}}
+            No record will be shared with you.
+
+            {{elif p.query and not p.partner_query}}
+            Your match has {{p.partner_record}}.
 
             {{else}}
-            <p style="color: darkred"> <span style="font-weight: bold">Player {{p.id}}</span>: Your match has {{p.partner_record}}.</p>
-            <p style="color: darkblue"> <span style="font-weight: bold">Player {{p.partner_id}}</span>: You have been queried. You have {{p.partner_record}}</p>
+            You have {{p.record}}.
             {{endif}}
-        {{endif}}
-    {{endfor}}
-</div>
+        </td>
+    </tr>
+    {{ endfor }}
+</table>
+
+    <button class="otree-btn-next btn btn-primary">Send</button>
 
 
-{{ next_button }}
-
-
-
-{{ endblock }}
-
+    {{ endblock }}
