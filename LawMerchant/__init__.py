@@ -327,11 +327,11 @@ def pd_set_payoff(player: Player):
 def round_set_payoffs(group:Group):
     for p in group.get_players():
         if p.pair_id != 0:
-            print('player'+str(p.id_in_group)+'payoff from stage 2:' + str(p.payoff))
+            # print('player'+str(p.id_in_group)+'payoff from stage 2:' + str(p.payoff))
             p.payoff = p.payoff-p.query*Constants.query_cost-p.report*Constants.report_cost\
                        +p.receivefine*Constants.fine
-            print('payoff after counting stages:' + str(p.payoff))
-            print('xxxxxxxxxxxx')
+            # print('payoff after counting stages:' + str(p.payoff))
+            # print('xxxxxxxxxxxx')
 
         else:
             others = p.get_others_in_group()
@@ -391,7 +391,9 @@ def get_payfine_list(player:Player):
 
 def update_records(group:Group):
     for p in group.get_players():
-        update_record(p)
+        #Only active partcipants need to update record
+        if p.pair_id != 0:
+            update_record(p)
 #TODO: something went wrong here, an invalid report now becomes a rejct of fine
 def update_record(player: Player):
     #only update record if ac rejects to pay fine and the report is valid
@@ -731,9 +733,9 @@ class EndRound(Page):
         if player.pair_id != 0:
             continuation_chance = int(round(Constants.delta * 100))
             if player.subsession.round_number in player.session.vars['super_games_end_rounds']:
-                print('xxxxx  supergame ends at', player.session.vars['super_games_end_rounds'])
-                print('xxxxx  supergame starts at', player.session.vars['super_games_start_rounds'])
-                print('xxxxx  supergame duration', player.session.vars['super_games_duration'])
+                # print('xxxxx  supergame ends at', player.session.vars['super_games_end_rounds'])
+                # print('xxxxx  supergame starts at', player.session.vars['super_games_start_rounds'])
+                # print('xxxxx  supergame duration', player.session.vars['super_games_duration'])
                 dieroll = random.randint(continuation_chance + 1, 100)
             else:
                 dieroll = random.randint(1, continuation_chance)
@@ -742,7 +744,6 @@ class EndRound(Page):
                         cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
                             player.subsession.curr_super_game - 1] + 1
                         )
-            # print(get_supergroup_round_results(player))
 
 
 class EndCycle(Page):
