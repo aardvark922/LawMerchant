@@ -124,6 +124,7 @@ class Player(BasePlayer):
     )
     cycle_round_number = models.IntegerField(initial=1)
     pd_payoff = models.IntegerField(initial=0)
+    guilty = models.BooleanField(initial=False)
 
 
 # FUNCTIONS
@@ -234,12 +235,31 @@ def get_supergroup_round_results(player: Player):
     round_results = []
     for o in others:
         partner = other_player(o)
-        result = dict(id=o.id_in_group, decision=o.decision, payoff=o.payoff, record=o.record, query=o.query,
-                      report=o.report, partner_id=partner.id_in_group, partner_decision=partner.decision,
-                      partner_payoff=partner.payoff, partner_record=partner.record, partner_query=partner.query,
-                      partner_report=partner.report)
+        result = dict(id=o.id_in_group, decision=o.decision, payoff=o.payoff, record=o.record, query=o.query, partner_id=partner.id_in_group, partner_decision=partner.decision,
+                      partner_payoff=partner.payoff, partner_record=partner.record, partner_query=partner.query,)
         round_results.append(result)
     return round_results
+
+def get_supergroup_query_results(player: Player):
+    others = player.get_others_in_group()
+    query_results = []
+    for o in others:
+        partner = other_player(o)
+        result = dict(id=o.id_in_group, payoff=o.payoff, record=o.record,query=o.query, partner_id=partner.id_in_group,
+                      partner_payoff=partner.payoff,partner_record=partner.record, partner_query=partner.query)
+        query_results.append(result)
+    return query_results
+
+def get_supergroup_report_results(player: Player):
+    others = get_report_player(player)
+    report_results = []
+    for o in others:
+        partner = other_player(o)
+        if o.report:
+            result = dict(id=o.id_in_group, decision=o.decision, partner_id=partner.id_in_group,
+                      partner_decision=partner.decision)
+            report_results.append(result)
+    return report_results
 
 def get_previous_others(player: Player):
     supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
@@ -329,7 +349,7 @@ def round_set_payoffs(group:Group):
         if p.pair_id != 0:
             # print('player'+str(p.id_in_group)+'payoff from stage 2:' + str(p.payoff))
             p.payoff = p.payoff-p.query*Constants.query_cost-p.report*Constants.report_cost\
-                       +p.receivefine*Constants.fine
+                       -p.payfine*Constants.fine+p.receivefine*Constants.fine
             # print('payoff after counting stages:' + str(p.payoff))
             # print('xxxxxxxxxxxx')
 
@@ -341,44 +361,78 @@ def round_set_payoffs(group:Group):
             p.payoff = Constants.observer_payoff + p.subsession.session.config['dishonesty']*sum(bribery_income)
 
 
-# get a list of players who queried in stage 1
+# get a string list of players who queried in stage 1 eg. [player 1, player3]
 def get_query_list(player: Player):
     ls = []
-    for p in player.get_others_in_group():
-        if p.query:
-            ls.append('Player ' + str(p.id_in_group))
+    if player.pair_id != 0:
+        for p in player.get_others_in_group():
+            if p.query:
+                ls.append('Player ' + str(p.id_in_group))
     separator = ', '
     query_list = separator.join(ls)
     return query_list
 
-# get a list of players who reported in stage 3
+# get a id list of players who queried in stage 1 eg:[2,3,5]
+def get_query_player(player:Player):
+    query_player = []
+    for p in player.get_others_in_group():
+        if p.pair_id != 0 and p.query:
+            query_player.append(p)
+    return query_player
+
+# get a string list of players who reported in stage 3 eg: [player 1, player3]
 def get_report_list(player: Player):
     ls = []
-    for p in player.get_others_in_group():
+    for p in get_query_player(player):
         if p.report:
             ls.append('Player ' + str(p.id_in_group))
     separator = ', '
     report_list = separator.join(ls)
     return report_list
+# get a list of players who reported in stage 3 eg:[2,3,5]
+def get_report_player(player:Player):
+    report_player = []
+    for p in get_query_player(player):
+        if p.report:
+            report_player.append(p)
+    return report_player
 
-# get a list of players who rejects to pay fine in stage 5
+# get a string list of players who rejects to pay fine in stage 5 eg. [player 1, player3]
 def get_reject_list(player: Player):
     ls = []
-    for p in player.get_others_in_group():
-        partner = other_player(p)
-        if p.payfine is False and p.decision == "Action Z" and partner.decision == "Action Y":
-            ls.append('Player ' + str(p.id_in_group))
+    for o in get_report_player(player):
+        #if my partner report, I will have a chance to reject
+        me = other_player(o)
+        if me.payfine is False and me.decision == "Action Z" and o.decision == "Action Y":
+            ls.append('Player ' + str(me.id_in_group))
     separator = ', '
     reject_list = separator.join(ls)
     return reject_list
 
+    # for p in player.get_others_in_group():
+    #     partner = other_player(p)
+    #     if p.payfine is False and p.decision == "Action Z" and partner.decision == "Action Y":
+    #         ls.append('Player ' + str(p.id_in_group))
+    # separator = ', '
+    # reject_list = separator.join(ls)
+    # return reject_list
+# get a list of players who rejects to pay fine in stage 5
 def get_reject_id(player:Player):
     reject_id=[]
-    for p in player.get_others_in_group():
-        partner = other_player(p)
-        if p.payfine is False and p.decision == "Action Z" and partner.decision == "Action Y":
-            reject_id.append(p.id_in_group)
+    for o in get_report_player(player):
+        #if my partner report, I will have a chance to reject
+        me = other_player(o)
+        if me.payfine is False and me.decision == "Action Z" and o.decision == "Action Y":
+            reject_id.append(me.id_in_group)
     return reject_id
+
+
+
+    # for p in player.get_others_in_group():
+    #     partner = other_player(p)
+    #     if p.payfine is False and p.decision == "Action Z" and partner.decision == "Action Y":
+    #         reject_id.append(p.id_in_group)
+    # return reject_id
 
 def get_payfine_list(player:Player):
     ls=[]
@@ -397,13 +451,26 @@ def update_records(group:Group):
 #TODO: something went wrong here, an invalid report now becomes a rejct of fine
 def update_record(player: Player):
     #only update record if ac rejects to pay fine and the report is valid
+    partner= other_player(player)
+    if player.guilty:
+        if not player.payfine:
+            player.record = 'unpaid fine'
+        else:
+            partner.receivefine = True
+
+#judge whether the defandant is guilty
+def judge_report(player:Player):
     partner = other_player(player)
     if partner.report:
         if player.decision == "Action Z" and partner.decision == "Action Y":
-            if player.payfine is False:
-                player.record = 'unpaid fine'
-            else:
-                partner.receivefine = True
+            player.guilty = True
+
+def judge_reports(group:Group):
+    for p in group.get_players():
+        #Only active partcipants need to update record
+        if p.pair_id != 0:
+            judge_report(p)
+
 # PAGES
 class Introduction(Page):
     timeout_seconds = 100
@@ -491,7 +558,7 @@ class Stage1Observer(Page):
     def vars_for_template(player: Player):
         if player.pair_id == 0:
             # print(get_supergroup_round_results(player))
-            return dict(active_players_round_results=get_supergroup_round_results(player),
+            return dict(active_players_query_results=get_supergroup_query_results(player),
                         cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
                             player.subsession.curr_super_game - 1] + 1,
                         query_list=get_query_list(player))
@@ -594,7 +661,8 @@ class Stage4Judge(Page):
     def vars_for_template(player: Player):
         if player.pair_id == 0:
             # print(get_supergroup_round_results(player))
-            return dict(active_players_round_results=get_supergroup_round_results(player),
+            return dict(active_players_report_results=get_supergroup_report_results(player),
+                        active_players_round_results=get_supergroup_round_results(player),
                         cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
                             player.subsession.curr_super_game - 1] + 1,
                         report_list=get_report_list(player))
@@ -616,10 +684,7 @@ class Stage5Fine(Page):
     #This page will only displayed to an active participant who has been reported by his match and the report is valid
     @staticmethod
     def is_displayed(player: Player):
-        opponent = other_player(player)
-        return player.pair_id != 0 and opponent.report == True \
-               and player.decision == "Action Z" \
-               and opponent.decision == "Action Y"
+        return player.guilty
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -659,6 +724,9 @@ class RecordsWaitPage(WaitPage):
 
 class Stage2ResultsWaitPage(WaitPage):
     after_all_players_arrive = pd_set_payoffs
+
+class JudgeWaitPage(WaitPage):
+    after_all_players_arrive = judge_reports
 
 class RoundResultsWaitPage(WaitPage):
     after_all_players_arrive = round_set_payoffs
@@ -786,12 +854,12 @@ page_sequence = [
     Stage2Results,
     S3ObWait,
     S3AcWait,
+    JudgeWaitPage,
     Stage4Judge,
     S4ObWait,
-    S4AcWait,
     Stage5Fine,
-    RecordsWaitPage,
     S5ObWait,
+    RecordsWaitPage,
     Stage6Update,
     RoundResultsWaitPage,
     RoundResults,

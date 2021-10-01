@@ -12,7 +12,7 @@ Query from <span style="font-style: italic">active participants</span>
         <th style="color: darkblue">Match's ID</th>
         <th style="color: darkblue">Match’s record</th>
     </tr>
-    {{ for p in active_players_round_results }}
+    {{ for p in active_players_query_results }}
     <tr>
         <td style="font-weight: bold; color: darkred">{{ p.id }}</td>
         <td style="color: darkred">{{ p.record }}</td>
@@ -31,7 +31,7 @@ Query from <span style="font-style: italic">active participants</span>
         <th>ID</th>
         <th>Message to send</th>
     </tr>
-    {{ for p in active_players_round_results }}
+    {{ for p in active_players_query_results}}
     <tr>
         <td style="font-weight: bold">{{ p.id }}</td>
         <td>

@@ -6,26 +6,35 @@
 {{  endblock }}
 
 {{ block content }}
-<p>query choice: {{my_query}}. Query payment: {{query_payment}}</p>
-<p>bribery choice: {{my_bribery }}</p>
-<p>report choice: {{my_report}}</p>
-<p>pay fine choice: {{my_payfine}}</p>
-<p>receive fine: {{my_receivefine}}</p>
-<p>earning from this round: {{my_earning}}</p>
 
-{{if both_cooperate}}
-Your earning from stage 2 is {{Constants.both_cooperate_payoff}}.
-{{elif both_defect}}
-Your earning from stage 2 is {{Constants.both_defect_payoff}}.
-{{elif i_cooperate_he_defects}}
-Your earning from stage 2 is {{Constants.betrayed_payoff}}.
-{{else}}
-Your earning from stage 2 is {{ Constants.betray_payoff}}.
+<p>{{if my_query}}
+In stage 1, you chose to query at cost of {{Constants.query_cost}}.
 {{endif}}
+</p>
+<p>In stage 2, your earning is
+{{if both_cooperate}}
+    {{Constants.both_cooperate_payoff}}.
+{{elif both_defect}}
+    {{Constants.both_defect_payoff}}.
+{{elif i_cooperate_he_defects}}
+    {{Constants.betrayed_payoff}}.
+{{else}}
+    {{ Constants.betray_payoff}}.
+{{endif}}
+</p>
+<p>{{if my_report}}
+In stage 3, you chose to report your match at cost of {{Constants.report_cost}}.
+    {{endif}}</p>
 
-
-
-
+<p>{{ if my_payfine}}
+    In stage 5, you paid {{Constants.fine}} to your match.
+    {{endif}}</p>
+<p>
+    {{if my_receivefine}}
+    In stage 5, you received {{Constants.fine}} from your match.
+</p>
+{{endif}}
+<p>Therefore, your earning from this round is <b>{{my_earning}}</b>. </p>
 {{next_button}}
 {{ endblock }}
 

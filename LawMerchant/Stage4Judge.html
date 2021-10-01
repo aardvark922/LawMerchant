@@ -25,11 +25,14 @@ Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 4
     {{ endfor }}
 </table>
 <br></br>
-<div><p>{{report_list}} reported. Now you will see whether each report is valid.</p>
-    <p><b>Remember:</b> A report is only valid if the reporter chose Action Y while his/her match chose Action Z.
- </p>
-    {{ for p in active_players_round_results }}
-        {{if p.report}}
+<div>
+    {{if report_list}}
+    <p>{{report_list}} reported stage 3. Now you will see whether each report is valid.</p>
+    <p><b>Remember:</b> A report is only valid if the reporter chose Action Y while his/her match chose Action Z.</p>
+    {{else}}
+    <p>None of the <i>active participants</i> reported in stage 3.</p>
+    {{endif}}
+    {{ for p in active_players_report_results }}
             {{if p.decision == "Action Y" and p.partner_decision == "Action Z"}}
 
                     <span style="font-weight: bold;color: darkred">Player {{p.id}}:</span>
@@ -41,7 +44,6 @@ Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 4
                     <ul style="color: darkred">  The report is not valid</ul>
                     <ul style="color: darkblue">Decision: Don't give fine to Player {{p.partner_id}}</ul>
             {{endif}}
-        {{endif}}
     {{endfor}}
 </div>
 <button class="otree-btn-next btn btn-primary">Send</button>
