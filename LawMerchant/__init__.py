@@ -84,11 +84,53 @@ class Player(BasePlayer):
         choices=Constants.true_false_choices
     )
     # stage 0 bribery decision
-    bribery = models.CurrencyField(
+    #Observer decides whether to request any active participants.
+    bribery1 = models.CurrencyField(
         initial=0,
-        label='''How much do you want to request from this active participants?''',
+        label='''How much do you want to request from player 1?''',
         min=0,
-        max=Constants.betray_payoff
+        max=Constants.betray_payoff,
+        widget= widgets.CheckboxInput
+    )
+    bribery2 = models.CurrencyField(
+        initial=0,
+        label='''How much do you want to request from player 2?''',
+        min=0,
+        max=Constants.betray_payoff,
+        widget=widgets.CheckboxInput
+    )
+    bribery3 = models.CurrencyField(
+        initial=0,
+        label='''How much do you want to request from player 3?''',
+        min=0,
+        max=Constants.betray_payoff,
+        widget=widgets.CheckboxInput
+    )
+    bribery4 = models.CurrencyField(
+        initial=0,
+        label='''How much do you want to request from player 4?''',
+        min=0,
+        max=Constants.betray_payoff,
+        widget=widgets.CheckboxInput
+    )
+    bribery5 = models.CurrencyField(
+        initial=0,
+        label='''How much do you want to request from player 5?''',
+        min=0,
+        max=Constants.betray_payoff,
+        widget=widgets.CheckboxInput
+    )
+    bribery6 = models.CurrencyField(
+        initial=0,
+        label='''How much do you want to request from player 6?''',
+        min=0,
+        max=Constants.betray_payoff,
+        widget=widgets.CheckboxInput
+    )#Whoever receives request from ob decides whether to accept it
+    bribery = models.BooleanField(
+        choices=Constants.yes_no_choices,
+        initial=False,
+        label="Do you want to give?",
     )
     # stage 1 query decision
     query = models.BooleanField(
