@@ -1,0 +1,59 @@
+{{block styles}}
+<style>
+    .column {
+  float: left;
+  width: 50%;
+  padding: 15px;
+}
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+</style>
+{{endblock}}
+{{ block title }}
+Cycle {{ subsession.curr_super_game }},  Round {{ cycle_round_number }}, Stage 0
+{{ endblock }}
+{{ block content }}
+
+
+<p>
+    At this stage, you have the opportunity to ask for some compensation from any <i>active participant</i> in your set.
+    <br>
+    If you decide not to ask for compensation from a player, he/she will not receive any message before stage 1.
+    <br>
+    If you decide to ask for x points (x is between 0 and {{Constants.betray_payoff}}) from a player he/she will receive the following message:
+<br>
+    "The <i>observer</i>  requested x points from you. If you reject to give, the <i>observer</i> will tell your match you have unpaid fine in the past when your match queries about you in stage 1."
+
+</p>
+
+<div class="row">
+  <div class="column">
+    <h5>Your choice</h5>
+      <p> {{formfields}}</p>
+  </div>
+
+  <div class="column">
+    <h5>Record of <i>active participants</i> in your set</h5>
+    <table class="table" style="width: 200px">
+    <tr>
+        <th>ID</th>
+        <th >Record</th>
+    </tr>
+    {{ for p in active_players_record_results }}
+    <tr>
+        <td style="font-weight: bold">{{ p.id }}</td>
+        <td >{{ p.record }}</td>
+    </tr>
+    {{ endfor }}
+</table>
+  </div>
+
+</div>
+
+
+<button class="otree-btn-next btn btn-primary">Submit</button>
+
+{{ endblock }}

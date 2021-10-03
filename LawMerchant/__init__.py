@@ -49,6 +49,7 @@ class Constants(BaseConstants):
     true_false_choices = [(1, 'True'), (0, 'False')]
     yes_no_choices = [(1, 'Yes'), (0, 'No')]
     record_options = [(1, 'unpaid fine'), (0, 'no unpaid fine')]
+    numbers = [1, 2, 3, 4, 5, 6]
 
 
 class Subsession(BaseSubsession):
@@ -89,49 +90,45 @@ class Player(BasePlayer):
         initial=0,
         label='''How much do you want to request from player 1?''',
         min=0,
-        max=Constants.betray_payoff,
-        widget= widgets.CheckboxInput
+        max=Constants.betray_payoff
     )
     bribery2 = models.CurrencyField(
         initial=0,
         label='''How much do you want to request from player 2?''',
         min=0,
-        max=Constants.betray_payoff,
-        widget=widgets.CheckboxInput
+        max=Constants.betray_payoff
     )
     bribery3 = models.CurrencyField(
         initial=0,
         label='''How much do you want to request from player 3?''',
         min=0,
-        max=Constants.betray_payoff,
-        widget=widgets.CheckboxInput
+        max=Constants.betray_payoff
     )
     bribery4 = models.CurrencyField(
         initial=0,
         label='''How much do you want to request from player 4?''',
         min=0,
-        max=Constants.betray_payoff,
-        widget=widgets.CheckboxInput
+        max=Constants.betray_payoff
     )
     bribery5 = models.CurrencyField(
         initial=0,
         label='''How much do you want to request from player 5?''',
         min=0,
-        max=Constants.betray_payoff,
-        widget=widgets.CheckboxInput
+        max=Constants.betray_payoff
     )
     bribery6 = models.CurrencyField(
         initial=0,
         label='''How much do you want to request from player 6?''',
         min=0,
-        max=Constants.betray_payoff,
-        widget=widgets.CheckboxInput
+        max=Constants.betray_payoff
     )#Whoever receives request from ob decides whether to accept it
     bribery = models.BooleanField(
         choices=Constants.yes_no_choices,
         initial=False,
-        label="Do you want to give?",
+        label="Do you want to give the observer his/her requested amount?",
     )
+    #the amount of bribery a player give the observer
+    bribery_requested= models.CurrencyField(initial=0,)
     # stage 1 query decision
     query = models.BooleanField(
         choices=Constants.yes_no_choices,
@@ -172,7 +169,7 @@ class Player(BasePlayer):
 # FUNCTIONS
 def creating_session(subsession: Subsession):
     # generate treatment code of current session
-    dishonesty = subsession.session.config['dishonesty']
+    subsession.dishonesty = subsession.session.config['dishonesty']
     # Importing modules needed
     from random import randint, shuffle, choices
     # Get Constants attributes once for all
@@ -287,10 +284,21 @@ def get_supergroup_query_results(player: Player):
     query_results = []
     for o in others:
         partner = other_player(o)
-        result = dict(id=o.id_in_group, payoff=o.payoff, record=o.record,query=o.query, partner_id=partner.id_in_group,
-                      partner_payoff=partner.payoff,partner_record=partner.record, partner_query=partner.query)
+        result = dict(id=o.id_in_group, payoff=o.payoff, record=o.record, bribery_request=o.bribery_requested,
+                      bribery=o.bribery,query=o.query, partner_id=partner.id_in_group,
+                      partner_payoff=partner.payoff, partner_bribery_request=partner.bribery_requested,
+                      partner_bribery=partner.bribery,partner_record=partner.record, partner_query=partner.query)
         query_results.append(result)
     return query_results
+
+def get_supergroup_record_results(player: Player):
+    others = player.get_others_in_group()
+    record_results = []
+    for o in others:
+        partner = other_player(o)
+        result = dict(id=o.id_in_group, record=o.record, partner_id=partner.id_in_group, partner_record=partner.record)
+        record_results.append(result)
+    return record_results
 
 def get_supergroup_report_results(player: Player):
     others = get_report_player(player)
@@ -359,6 +367,13 @@ def other_player(player: Player):
     if player.pair_id != 0:
         return [p for p in player.get_others_in_group() if p.pair_id == player.pair_id][0]
 
+def get_observer(player:Player):
+    if player.pair_id != 0:
+        observer = [p for p in player.get_others_in_group() if p.pair_id == 0][0]
+
+    else:
+        observer = player
+    return observer
 
 # Set payoffs for group in stage 2
 def pd_set_payoffs(group: Group):
@@ -390,7 +405,7 @@ def round_set_payoffs(group:Group):
     for p in group.get_players():
         if p.pair_id != 0:
             # print('player'+str(p.id_in_group)+'payoff from stage 2:' + str(p.payoff))
-            p.payoff = p.payoff-p.query*Constants.query_cost-p.report*Constants.report_cost\
+            p.payoff = p.payoff-p.bribery*p.bribery_requested -p.query*Constants.query_cost-p.report*Constants.report_cost\
                        -p.payfine*Constants.fine+p.receivefine*Constants.fine
             # print('payoff after counting stages:' + str(p.payoff))
             # print('xxxxxxxxxxxx')
@@ -399,17 +414,44 @@ def round_set_payoffs(group:Group):
             others = p.get_others_in_group()
             bribery_income=[]
             for o in others:
-                bribery_income.append(o.bribery)
+                bribery_income.append(o.bribery*o.bribery_requested)
             p.payoff = Constants.observer_payoff + p.subsession.session.config['dishonesty']*sum(bribery_income)
 
+def get_bribery_amount(player:Player):
+    if player.pair_id !=0:
+        field_name = 'bribery{}'.format(player.id_in_group)
+        observer = get_observer(player)
+        bribery_amount = getattr(observer, field_name)
+    return bribery_amount
 
+def get_bribery_amounts(group:Group):
+    for p in group.get_players():
+        if p.pair_id != 0:
+            p.bribery_requested = get_bribery_amount(p)
+
+# get a string list of players who refused to pay bribery in stage 0 eg. [player 1, player3]
+def get_refuse_bribery_list(player: Player):
+    ls = []
+    for p in player.get_others_in_group():
+        if p.bribery_requested != 0 and p.bribery is False and p.pair_id != 0:
+            ls.append('Player ' + str(p.id_in_group))
+    separator = ', '
+    refuse_bribery_list = separator.join(ls)
+    return refuse_bribery_list
+
+# get a id list of players who queried in stage 1 eg:[2,3,5]
+def get_refuse_bribery_player(player:Player):
+    refuse_bribery_player = []
+    for p in player.get_others_in_group():
+        if p.pair_id != 0 and p.bribery is False and p.bribery_requested != 0:
+            refuse_bribery_player.append(p)
+    return refuse_bribery_player
 # get a string list of players who queried in stage 1 eg. [player 1, player3]
 def get_query_list(player: Player):
     ls = []
-    if player.pair_id != 0:
-        for p in player.get_others_in_group():
-            if p.query:
-                ls.append('Player ' + str(p.id_in_group))
+    for p in player.get_others_in_group():
+        if p.query and p.pair_id !=0:
+            ls.append('Player ' + str(p.id_in_group))
     separator = ', '
     query_list = separator.join(ls)
     return query_list
@@ -557,9 +599,57 @@ class AssignRole(Page):
             player.subsession.curr_super_game - 1]
 
 
-class Stage0(Page):
-    # Bribery request page that will only show when dishonesty= 1
-    pass
+# Bribery request page that will only show when dishonesty= 1
+class Stage0RequestB(Page):
+    form_model = 'player'
+    form_fields = ['bribery{}'.format(n) for n in Constants.numbers]
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.subsession.dishonesty is True and player.pair_id == 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id == 0:
+            return dict(active_players_record_results=get_supergroup_record_results(player),
+                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1)
+
+#Active participants decides whether to give observer the compensation he requested
+#Only when requested by observer will a player have to decide
+class Stage0Bribery(Page):
+    form_model = 'player'
+    form_fields = ['bribery']
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.bribery_requested != 0
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        if player.pair_id != 0:
+            return dict(cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                                player.subsession.curr_super_game - 1] + 1,
+                        bribery_amount=player.bribery_requested)
+
+class BriberyResultsWait(WaitPage):
+    after_all_players_arrive= get_bribery_amounts
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.subsession.dishonesty is True
+
+class S0ObWait(WaitPage):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id == 0 and player.subsession.dishonesty is True
+
+
+class S0AcWait(WaitPage):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.pair_id != 0
+
 
 
 class Stage1Query(Page):
@@ -603,7 +693,8 @@ class Stage1Observer(Page):
             return dict(active_players_query_results=get_supergroup_query_results(player),
                         cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
                             player.subsession.curr_super_game - 1] + 1,
-                        query_list=get_query_list(player))
+                        query_list=get_query_list(player), refuse_bribery_list= get_refuse_bribery_list(player),
+                        refuse_bribery_player=get_refuse_bribery_player(player))
 
 
 class Stage1Outcome(Page):
@@ -618,6 +709,7 @@ class Stage1Outcome(Page):
         return {
             'my_record': me.record,
             'opponent_record': opponent.record,
+            'opponent_refuse_bribery': opponent.bribery_requested != 0 and opponent.bribery == False,
             'me_query': me.query,
             'partner_query': opponent.query,
             'both_query': me.query == True and opponent.query == True,
@@ -796,6 +888,7 @@ class RoundResults(Page):
             'my_query':me.query,
             'query_payment': me.query*Constants.query_cost,
             'my_bribery':me.bribery,
+            'my_paidbribery':me.bribery_requested,
             'my_report':me.report,
             'my_payfine':me.payfine,
             'my_receivefine':me.receivefine,
@@ -886,16 +979,19 @@ page_sequence = [
     # Instructions0,
     # ComprehensionTest,
     AssignRole,
+    Stage0RequestB,
+    BriberyResultsWait,
+    Stage0Bribery,
     Stage1Query,
     S1ObWait,
-    S1AcWait,
     Stage1Observer,
+    S1AcWait,
     Stage1Outcome,
     Stage2Decision,
     Stage2ResultsWaitPage,
     Stage2Results,
-    S3ObWait,
-    S3AcWait,
+    # S3ObWait,
+    # S3AcWait,
     JudgeWaitPage,
     Stage4Judge,
     S4ObWait,
@@ -905,9 +1001,7 @@ page_sequence = [
     Stage6Update,
     RoundResultsWaitPage,
     RoundResults,
-    # ObserverResults,
-    # ObserverHistory,
-     EndRound,
-     EndCycle,
-     End
+    EndRound,
+    EndCycle,
+    End
 ]

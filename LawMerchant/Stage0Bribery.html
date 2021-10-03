@@ -1,0 +1,17 @@
+{{ block title }}
+Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 0&#8211; Your choice
+{{ endblock }}
+{{ block content }}
+<div align="justify">
+    <p>The <i>observer</i> requested <b>{{bribery_amount}}</b>  from you.
+        <br>
+        If you reject to give, the <i>observer</i> will tell your match that you have unpaid fine in the past
+        when your match queries about you.
+</p>
+    {{ formfields }}
+</div>
+
+
+{{ next_button }}
+
+{{ endblock }}

@@ -6,7 +6,11 @@
 {{  endblock }}
 
 {{ block content }}
-
+<p>
+{{if my_bribery}}
+    In stage 0, you gave the <i>observer</i> {{my_paidbribery}}.
+    {{endif}}
+</p>
 <p>{{if my_query}}
 In stage 1, you chose to query at cost of {{Constants.query_cost}}.
 {{endif}}

@@ -22,8 +22,67 @@ Query from <span style="font-style: italic">active participants</span>
     </tr>
     {{ endfor }}
 </table>
-<br>
 
+
+{{if query_list}}
+<!-- For dishonest treatment-->
+{{if subsession.dishonesty}}
+
+<p>{{if refuse_bribery_list}}
+    {{refuse_bribery_list}} rejected to pay you.
+    {{endif}}
+<br>
+    {{query_list}} queried.
+    <br>
+    The table below shows the messages to be sent.
+</p>
+<table class="table" style="width: 600px; height: 200px">
+    <tr>
+        <th>ID</th>
+        <th>Message to send</th>
+    </tr>
+    {{ for p in active_players_query_results}}
+        {{if p.partner_bribery_request and not p.partner_bribery}}
+        <tr>
+            <td style="font-weight: bold">{{ p.id }}</td>
+            <td>
+                {{if p.query and p.partner_query}}
+                    Your have {{p.record}}.
+                    Your match's has unpaid fine.
+                {{elif not p.query and not p.partner_query}}
+                No record will be shared with you.
+
+                {{elif p.query and not p.partner_query}}
+                Your match has unpaid fine.
+
+                {{else}}
+                You have {{p.record}}.
+                {{endif}}
+            </td>
+        </tr>
+    {{else}}
+        <tr>
+            <td style="font-weight: bold">{{ p.id }}</td>
+            <td>
+                {{if p.query and p.partner_query}}
+                    Your have {{p.record}}.
+                    Your match's has {{p.partner_record}}.
+                {{elif not p.query and not p.partner_query}}
+                No record will be shared with you.
+
+                {{elif p.query and not p.partner_query}}
+                Your match has {{p.partner_record}}.
+
+                {{else}}
+                You have {{p.record}}.
+                {{endif}}
+            </td>
+        </tr>
+    {{endif}}
+    {{ endfor }}
+</table>
+<!-- For honest treatment-->
+{{else}}
 <p>{{query_list}} queried. The table below shows the messages to be sent.</p>
 
 <table class="table" style="width: 600px; height: 200px">
@@ -51,7 +110,10 @@ Query from <span style="font-style: italic">active participants</span>
     </tr>
     {{ endfor }}
 </table>
-
+{{endif}}
+{{else}}
+<p>None of the <i>active participants</i> queried you. Hence, there's no message to send.</p>
+{{endif}}
     <button class="otree-btn-next btn btn-primary">Send</button>
 
 
