@@ -27,7 +27,7 @@ Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 4
 <br></br>
 <div>
     {{if report_list}}
-    <p>{{report_list}} reported stage 3. Now you will see whether each report is valid.</p>
+    <p>{{report_list}} reported in stage 3. Now you will see whether each report is valid.</p>
     <p><b>Remember:</b> A report is only valid if the reporter chose Action Y while his/her match chose Action Z.</p>
     {{else}}
     <p>None of the <i>active participants</i> reported in stage 3.</p>
@@ -46,6 +46,10 @@ Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 4
             {{endif}}
     {{endfor}}
 </div>
+{{if report_list}}
 <button class="otree-btn-next btn btn-primary">Send</button>
+{{else}}
+{{ next_button }}
+{{endif}}
 
 {{ endblock }}

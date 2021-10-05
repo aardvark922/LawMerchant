@@ -1,0 +1,40 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{{ block title }}
+    Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number}} &#8211; Results
+{{  endblock }}
+
+{{ block content }}
+
+{{if receive_bribery}}
+    <p> In stage 0, you received {{bribery_income}} from <i>active participants</i>.
+    <br>
+    {{if query_list}}
+    In stage 1, you received {{query_income}} as you have been queried.
+    {{endif}}
+    <br>
+    You also earn {{Constants.observer_payoff}}.
+    <br>
+    Therefore, your earning from this round is <b>{{my_earning}}</b>. </p>
+{{else}}
+<p>
+    {{if query_list}}
+    In stage 1, you received {{query_income}} as you have been queried.
+    {{endif}}
+    <br>
+    Your earning from this round is <b>{{my_earning}}</b>. </p>
+{{endif}}
+
+{{next_button}}
+{{ endblock }}
+
+{% block styles %}
+    <style>
+
+.otree-timer {
+    display: none;
+}
+    </style>
+{% endblock %}
+

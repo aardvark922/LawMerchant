@@ -7,52 +7,62 @@ Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 1&
     {{if opponent_refuse_bribery}}
         {{if both_query}}
             <p>Both you and your match queried the observer. Here's the query outcome:</p>
-            <p>Your have {{my_record}}. </p>
+            <b><p>Your have {{my_record}}. </p>
             <p>Your match's has unpaid fine. </p>
+            </b>
+
         {{elif no_query}}
             <p>None of you queried the observer. So no record will be shared with you.</p>
 
         {{elif i_query}}
             <p>Only you queried the observer. Here's the query outcome:</p>
-            <p>Your match has unpaid fine.</p>
+            <b> <p>Your match has unpaid fine.</p></b>
+
 
         {{else}}
             <p>Only your match queried the observer. Here's the query outcome:</p>
-            <p>You have {{my_record}}.</p>
+            <b><p>You have {{my_record}}.</p></b>
+
         {{endif}}
     {{else}}
     {{if both_query}}
             <p>Both you and your match queried the observer. Here's the query outcome:</p>
-            <p>Your have {{my_record}}. </p>
-            <p>Your match's has {{opponent_record}}. </p>
+            <b> <p>Your have {{my_record}}. </p>
+            <p>Your match's has {{opponent_record}}. </p></b>
+
         {{elif no_query}}
             <p>None of you queried the observer. So no record will be shared with you.</p>
 
         {{elif i_query}}
             <p>Only you queried the observer. Here's the query outcome:</p>
-            <p>Your match has {{opponent_record}}.</p>
+            <b><p>Your match has {{opponent_record}}.</p></b>
+
 
         {{else}}
             <p>Only your match queried the observer. Here's the query outcome:</p>
-            <p>You have {{my_record}}.</p>
+            <b><p>You have {{my_record}}.</p></b>
+
         {{endif}}
     {{endif}}
 {{else}}
 
     {{if both_query}}
         <p>Both you and your match queried the observer. Here's the query outcome:</p>
-        <p>Your have {{my_record}}. </p>
-        <p>Your match's has {{opponent_record}}. </p>
+        <b><p>Your have {{my_record}}. </p>
+        <p>Your match's has {{opponent_record}}. </p></b>
+
     {{elif no_query}}
         <p>None of you queried the observer. So no record will be shared with you.</p>
 
     {{elif i_query}}
         <p>Only you queried the observer. Here's the query outcome:</p>
-        <p>Your match has {{opponent_record}}.</p>
+        <b><p>Your match has {{opponent_record}}.</p></b>
+
 
     {{else}}
         <p>Only your match queried the observer. Here's the query outcome:</p>
-        <p>You have {{my_record}}.</p>
+        <b><p>You have {{my_record}}.</p></b>
+
     {{endif}}
 {{endif}}
 {{ next_button }}

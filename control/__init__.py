@@ -1,5 +1,4 @@
 from otree.api import *
-import numpy as np
 import time
 import random
 
@@ -15,8 +14,8 @@ class Constants(BaseConstants):
     instructions_template = 'control/instructions.html'
     summary_template = 'control/summary.html'
     players_per_group = None
-    num_super_games = 3
-    delta = 0.50  # discount factor equals to 0.90
+    num_super_games = 2
+    delta = 0.90  # discount factor equals to 0.90
 
     time_limit = 60 * 20
     time_limit_seconds = 60 * 20
@@ -267,6 +266,20 @@ def other_player(player: Player):
 def set_payoffs(group: Group):
     for p in group.get_players():
         set_payoff(p)
+#roll a die for the whole group
+def roll_die(group:Group):
+    continuation_chance = int(round(Constants.delta * 100))
+    dieroll_continue = random.randint(1, continuation_chance)
+    dieroll_end = random.randint(continuation_chance + 1, 100)
+    for p in group.get_players():
+        if p.subsession.round_number in p.session.vars['super_games_end_rounds']:
+            p.dieroll=dieroll_end
+        else:
+            p.dieroll = dieroll_continue
+#call two functions at one time
+def round_payoff_and_roll_die(group:Group):
+    roll_die(group)
+    set_payoffs(group)
 
 
 def set_payoff(player: Player):
@@ -350,7 +363,7 @@ class Decision(Page):
 
 
 class ResultsWaitPage(WaitPage):
-    after_all_players_arrive = set_payoffs
+    after_all_players_arrive = round_payoff_and_roll_die
 
 
 # Show observer what active players did in the last round
@@ -415,14 +428,14 @@ class EndRound(Page):
     def vars_for_template(player: Player):
         if player.pair_id != 0:
             continuation_chance = int(round(Constants.delta * 100))
-            if player.subsession.round_number in player.session.vars['super_games_end_rounds']:
-                print('xxxxx  supergame ends at',player.session.vars['super_games_end_rounds'])
-                print('xxxxx  supergame starts at',player.session.vars['super_games_start_rounds'])
-                print('xxxxx  supergame duration',player.session.vars['super_games_duration'])
-                dieroll = random.randint(continuation_chance + 1, 100)
-            else:
-                dieroll = random.randint(1, continuation_chance)
-            return dict(dieroll=dieroll, continuation_chance=continuation_chance,
+            # if player.subsession.round_number in player.session.vars['super_games_end_rounds']:
+            #     print('xxxxx  supergame ends at',player.session.vars['super_games_end_rounds'])
+            #     print('xxxxx  supergame starts at',player.session.vars['super_games_start_rounds'])
+            #     print('xxxxx  supergame duration',player.session.vars['super_games_duration'])
+            #     dieroll = random.randint(continuation_chance + 1, 100)
+            # else:
+            #     dieroll = random.randint(1, continuation_chance)
+            return dict(dieroll=player.dieroll, continuation_chance=continuation_chance,
                         die_threshold_plus_one=continuation_chance + 1,
                         cycle_round_number= player.round_number - player.session.vars['super_games_start_rounds'][
                 player.subsession.curr_super_game - 1] + 1

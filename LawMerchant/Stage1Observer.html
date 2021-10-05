@@ -1,9 +1,24 @@
+{{block styles}}
+<style>
+    .column {
+  float: left;
+  width: 50%;
+  padding: 15px;
+}
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+</style>
+{{endblock}}
 {{ block title }}
 Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 1&#8211;
 Query from <span style="font-style: italic">active participants</span>
 {{ endblock }}
 {{ block content }}
-
+<div class="row">
+<div class="column">
 <h5>Record of <span style="font-style: italic">active participants</span> in your set</h5>
 <table class="table" style="width: 400px">
     <tr>
@@ -22,17 +37,20 @@ Query from <span style="font-style: italic">active participants</span>
     </tr>
     {{ endfor }}
 </table>
+</div>
 
-
+    <div class="column">
 {{if query_list}}
 <!-- For dishonest treatment-->
 {{if subsession.dishonesty}}
 
-<p>{{if refuse_bribery_list}}
-    {{refuse_bribery_list}} rejected to pay you.
-    {{endif}}
-<br>
+<p>
+
     {{query_list}} queried.
+    <br>
+    {{if refuse_bribery_list}}
+        {{refuse_bribery_list}} rejected to pay you.
+    {{endif}}
     <br>
     The table below shows the messages to be sent.
 </p>
@@ -114,7 +132,14 @@ Query from <span style="font-style: italic">active participants</span>
 {{else}}
 <p>None of the <i>active participants</i> queried you. Hence, there's no message to send.</p>
 {{endif}}
-    <button class="otree-btn-next btn btn-primary">Send</button>
+</table>
+  </div>
+    </div>
 
+{{if query_list}}
+    <button class="otree-btn-next btn btn-primary">Send</button>
+{{else}}
+{{ next_button }}
+{{endif}}
 
     {{ endblock }}

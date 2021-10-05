@@ -19,21 +19,21 @@ SESSION_CONFIGS = [
          num_demo_participants=14,
      ),
 
-    dict(
-        name='Prisoner_Dilemma',
-        app_sequence=['Prisoner_Dilemma'],
-        num_demo_participants=2,
-    ),
-    dict(
-        name='history_table',
-        app_sequence=['history_table'],
-        num_demo_participants=1,
-    ),
-    dict(
-        name='show_other_players_payoffs',
-        app_sequence=['show_other_players_payoffs'],
-        num_demo_participants=4,
-    ),
+    # dict(
+    #     name='Prisoner_Dilemma',
+    #     app_sequence=['Prisoner_Dilemma'],
+    #     num_demo_participants=2,
+    # ),
+    # dict(
+    #     name='history_table',
+    #     app_sequence=['history_table'],
+    #     num_demo_participants=1,
+    # ),
+    # dict(
+    #     name='show_other_players_payoffs',
+    #     app_sequence=['show_other_players_payoffs'],
+    #     num_demo_participants=4,
+    # ),
     # dict(
     #     name='public_goods',
     #     app_sequence=['public_goods', 'payment_info'],
@@ -41,6 +41,14 @@ SESSION_CONFIGS = [
     # ),
 ]
 
+ROOMS = [
+    dict(
+        name='LM',
+        display_name='Law_Merchant',
+        participant_label_file='_rooms/lab.txt',
+        use_secure_urls=True
+    )
+]
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
 # in SESSION_CONFIGS, except those that explicitly override it.
 # the session config can be accessed from methods in your apps as self.session.config,

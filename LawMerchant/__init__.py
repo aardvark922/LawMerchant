@@ -1,5 +1,4 @@
 from otree.api import *
-import numpy as np
 import time
 import random
 
@@ -16,7 +15,7 @@ class Constants(BaseConstants):
     summary_template = 'LawMerchant/summary.html'
     players_per_group = None
     num_super_games = 2  # 5 in experiment
-    delta = 0.5  # discount factor equals to 0.90 in experiment
+    delta = 0.9  # discount factor equals to 0.90 in experiment
 
     time_limit = 60 * 20
     time_limit_seconds = 60 * 20
@@ -45,6 +44,8 @@ class Constants(BaseConstants):
     report_cost = cu(3)
     # cost of pay the fine in stage 5
     fine = cu(20)
+    #payment observer receives per query
+    query_payment = cu(1)
 
     true_false_choices = [(1, 'True'), (0, 'False')]
     yes_no_choices = [(1, 'Yes'), (0, 'No')]
@@ -132,7 +133,7 @@ class Player(BasePlayer):
     # stage 1 query decision
     query = models.BooleanField(
         choices=Constants.yes_no_choices,
-        label=f"Do you want to spend {Constants.query_cost} to know whether your match has unpaid fine in the past?",
+        label=f"Do you want to spend {Constants.query_cost} to learn whether your match has unpaid fine in the past?",
     )
     # stage 2 PD decision
     decision = models.StringField(
@@ -145,7 +146,7 @@ class Player(BasePlayer):
     report = models.BooleanField(
         choices=Constants.yes_no_choices,
         initial=False,
-        label=f"Do you want to spend {Constants.report_cost} to report your partner to the observer?",
+        label=f"Do you want to spend {Constants.report_cost} to report that your are unsatisfied with your match to the observer?",
     )
     # stage 5 pay fine decision
     payfine = models.BooleanField(
@@ -164,6 +165,7 @@ class Player(BasePlayer):
     cycle_round_number = models.IntegerField(initial=1)
     pd_payoff = models.IntegerField(initial=0)
     guilty = models.BooleanField(initial=False)
+    dieroll = models.IntegerField(min=1, max=100)
 
 
 # FUNCTIONS
@@ -251,23 +253,6 @@ def set_pairs(subsession: Subsession, pair_ids: list, observer_num: int):
         for n, p in enumerate(players[:len(players) - observer_num]):
             p.pair_id = pair_ids[n]
 
-# Get opponent player id
-def get_supergroup_previous_others(player: Player):
-    supergame_first_round = player.session.vars['super_games_start_rounds'][player.subsession.curr_super_game - 1]
-    others = player.get_others_in_group()
-    group_history = []
-    for o in others:
-        other_history = []
-        previous_others = o.in_rounds(supergame_first_round, player.round_number)
-        for p in previous_others:
-            p.cycle_round_number = p.round_number - p.session.vars['super_games_start_rounds'][
-                p.subsession.curr_super_game - 1] + 1
-            history = dict(round_number=p.cycle_round_number,
-                           decision=p.decision, id=p.id_in_group)
-            other_history.append(history)
-        group_history.append(other_history)
-    return group_history
-    # return [other.in_rounds(supergame_first_round, player.round_number) for other in player.get_others_in_group()]
 
 def get_supergroup_round_results(player: Player):
     others = player.get_others_in_group()
@@ -275,7 +260,7 @@ def get_supergroup_round_results(player: Player):
     for o in others:
         partner = other_player(o)
         result = dict(id=o.id_in_group, decision=o.decision, payoff=o.payoff, record=o.record, query=o.query, partner_id=partner.id_in_group, partner_decision=partner.decision,
-                      partner_payoff=partner.payoff, partner_record=partner.record, partner_query=partner.query,)
+                          partner_payoff=partner.payoff, partner_record=partner.record, partner_query=partner.query,)
         round_results.append(result)
     return round_results
 
@@ -411,11 +396,35 @@ def round_set_payoffs(group:Group):
             # print('xxxxxxxxxxxx')
 
         else:
-            others = p.get_others_in_group()
-            bribery_income=[]
-            for o in others:
-                bribery_income.append(o.bribery*o.bribery_requested)
-            p.payoff = Constants.observer_payoff + p.subsession.session.config['dishonesty']*sum(bribery_income)
+            #the second half only counts when dishonesty == 1
+            p.payoff = Constants.observer_payoff +\
+                       p.subsession.session.config['dishonesty']*(Constants.query_payment*len(get_query_player(p))+ get_bribery_income(p))
+#roll a die with the same number of entire group
+def roll_die(group:Group):
+    continuation_chance = int(round(Constants.delta * 100))
+    dieroll_continue = random.randint(1, continuation_chance)
+    dieroll_end = random.randint(continuation_chance + 1, 100)
+    for p in group.get_players():
+        if p.subsession.round_number in p.session.vars['super_games_end_rounds']:
+            p.dieroll=dieroll_end
+        else:
+            p.dieroll = dieroll_continue
+
+#call two functions at one time
+def round_payoff_and_roll_die(group:Group):
+    roll_die(group)
+    round_set_payoffs(group)
+
+def get_bribery_income(player:Player):
+    if player.pair_id == 0:
+        others = player.get_others_in_group()
+        bribery_income = []
+        for o in others:
+            bribery_income.append(o.bribery * o.bribery_requested)
+        bribery_earning = sum(bribery_income)
+        # print('bribery income is')
+        # print(bribery_earning)
+    return bribery_earning
 
 def get_bribery_amount(player:Player):
     if player.pair_id !=0:
@@ -526,6 +535,11 @@ def get_payfine_list(player:Player):
     separator = ', '
     payfine_list = separator.join(ls)
     return payfine_list
+def fetch_records(group:Group):
+    for p in group.get_players():
+        prev_p = p.in_round(p.round_number-1)
+        if p.pair_id != 0:
+            p.record = prev_p.record
 
 def update_records(group:Group):
     for p in group.get_players():
@@ -554,6 +568,7 @@ def judge_reports(group:Group):
         #Only active partcipants need to update record
         if p.pair_id != 0:
             judge_report(p)
+
 
 # PAGES
 class Introduction(Page):
@@ -633,7 +648,7 @@ class Stage0Bribery(Page):
                         bribery_amount=player.bribery_requested)
 
 class BriberyResultsWait(WaitPage):
-    after_all_players_arrive= get_bribery_amounts
+    after_all_players_arrive = get_bribery_amounts
 
     @staticmethod
     def is_displayed(player: Player):
@@ -853,6 +868,15 @@ class Stage6Update(Page):
                         reject_list=get_reject_list(player), reject_id = get_reject_id(player),
                         payfine_list=get_payfine_list(player))
 
+class FetchRecords(WaitPage):
+    #fetch player's record from last round and is only displayed on and after round 2
+    after_all_players_arrive = fetch_records
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number - player.session.vars['super_games_start_rounds'][
+                player.subsession.curr_super_game - 1] + 1 != 1
+
 class RecordsWaitPage(WaitPage):
     after_all_players_arrive = update_records
 
@@ -863,10 +887,10 @@ class JudgeWaitPage(WaitPage):
     after_all_players_arrive = judge_reports
 
 class RoundResultsWaitPage(WaitPage):
-    after_all_players_arrive = round_set_payoffs
-# Show observer what active players did in the last round
+    after_all_players_arrive = round_payoff_and_roll_die
+# Set payoff for this round and at mean time roll a die
 
-class RoundResults(Page):
+class RoundResultsAc(Page):
     @staticmethod
     def is_displayed(player: Player):
         return player.pair_id != 0
@@ -894,55 +918,30 @@ class RoundResults(Page):
             'my_receivefine':me.receivefine,
             'my_earning':me.payoff
         }
-
-
-class ObserverResults(Page):
+class RoundResultsOb(Page):
     @staticmethod
     def is_displayed(player: Player):
         return player.pair_id == 0
-
     @staticmethod
     def vars_for_template(player: Player):
-        if player.pair_id == 0:
-            # print(get_supergroup_round_results(player))
-            return dict(active_players_round_results=get_supergroup_round_results(player),
-                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
-                            player.subsession.curr_super_game - 1] + 1)
-
-
-# Show observer the history of decisions all 6 active players have chosen
-class ObserverHistory(Page):
-    @staticmethod
-    def is_displayed(player: Player):
-        return player.pair_id == 0
-
-    @staticmethod
-    def vars_for_template(player: Player):
-        if player.pair_id == 0:
-            return dict(active_players_in_all_rounds=get_supergroup_previous_others(player),
-                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
-                            player.subsession.curr_super_game - 1] + 1,
-                        start_round=player.session.vars['super_games_start_rounds'][
-                            player.subsession.curr_super_game - 1])
-
-
+        return {'receive_bribery': get_bribery_income(player) != 0,
+                'bribery_income': get_bribery_income(player),
+                'cycle_round_number': player.round_number - player.session.vars['super_games_start_rounds'][
+                    player.subsession.curr_super_game - 1] + 1,
+                'my_earning': player.payoff,
+                'query_list': get_query_list(player),
+                'query_income': Constants.query_payment*len(get_query_player(player))
+                }
+#ac and ob would see the same end round outcome
 class EndRound(Page):
     @staticmethod
-    def is_displayed(player: Player):
-        return player.pair_id != 0
-
-    @staticmethod
     def vars_for_template(player: Player):
-        if player.pair_id != 0:
-            continuation_chance = int(round(Constants.delta * 100))
-            if player.subsession.round_number in player.session.vars['super_games_end_rounds']:
-                # print('xxxxx  supergame ends at', player.session.vars['super_games_end_rounds'])
-                # print('xxxxx  supergame starts at', player.session.vars['super_games_start_rounds'])
-                # print('xxxxx  supergame duration', player.session.vars['super_games_duration'])
-                dieroll = random.randint(continuation_chance + 1, 100)
-            else:
-                dieroll = random.randint(1, continuation_chance)
-            return dict(dieroll=dieroll, continuation_chance=continuation_chance,
+        continuation_chance = int(round(Constants.delta * 100))
+        # if player.subsession.round_number in player.session.vars['super_games_end_rounds']:
+        #     dieroll = random.randint(continuation_chance + 1, 100)
+        # else:
+        #     dieroll = random.randint(1, continuation_chance)
+        return dict(dieroll=player.dieroll, continuation_chance=continuation_chance,
                         die_threshold_plus_one=continuation_chance + 1,
                         cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
                             player.subsession.curr_super_game - 1] + 1
@@ -979,6 +978,7 @@ page_sequence = [
     # Instructions0,
     # ComprehensionTest,
     AssignRole,
+    FetchRecords,
     Stage0RequestB,
     BriberyResultsWait,
     Stage0Bribery,
@@ -1000,7 +1000,8 @@ page_sequence = [
     RecordsWaitPage,
     Stage6Update,
     RoundResultsWaitPage,
-    RoundResults,
+    RoundResultsAc,
+    RoundResultsOb,
     EndRound,
     EndCycle,
     End
