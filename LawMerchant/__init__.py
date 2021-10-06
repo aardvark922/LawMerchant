@@ -69,10 +69,11 @@ class Player(BasePlayer):
         label='1. If you are the observer in current cycle, '
               'you will be an active participant in the next cycle for sure.',
         choices=Constants.true_false_choices)
-    quiz2 = models.IntegerField(label='2.  If you are an active player in current cycle, '
+    quiz2 = models.IntegerField(
+        label='2.  If you are an active player in current cycle, '
                                       'when you choose Y and your partner chooses Z. What is your payoff?',
-                                choices=[(1, "25"), (2, "5"), (3, "10"), (4, "30")],
-                                widget=widgets.RadioSelect)
+        choices=[(1, "25"), (2, "5"), (3, "10"), (4, "30")],
+        widget=widgets.RadioSelect)
     quiz3 = models.BooleanField(
         label="3. The lengths of each cycle are the same.",
         choices=Constants.true_false_choices
@@ -976,7 +977,7 @@ class End(Page):
 page_sequence = [
     # Introduction,
     # Instructions0,
-    # ComprehensionTest,
+    ComprehensionTest,
     AssignRole,
     FetchRecords,
     Stage0RequestB,
