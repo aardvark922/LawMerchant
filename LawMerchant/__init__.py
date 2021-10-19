@@ -23,7 +23,7 @@ class Constants(BaseConstants):
     num_rounds = 100  # sum(super_game_duration)
 
     # Nested groups parameters
-    super_group_size = 7
+    super_group_size = 5
     observer_num = 1
     group_size = 2
 
@@ -49,8 +49,9 @@ class Constants(BaseConstants):
 
     true_false_choices = [(1, 'True'), (0, 'False')]
     yes_no_choices = [(1, 'Yes'), (0, 'No')]
-    record_options = [(1, 'unpaid fine'), (0, 'no unpaid fine')]
-    numbers = [1, 2, 3, 4, 5, 6]
+    record_options = [(1, 'Bad'), (0, 'Good')]
+    bribery_options = [0,5,10,15,20]
+    numbers = [1, 2, 3, 4]
 
 
 class Subsession(BaseSubsession):
@@ -91,39 +92,35 @@ class Player(BasePlayer):
     bribery1 = models.CurrencyField(
         initial=0,
         label='''How much do you want to request from player 1?''',
-        min=0,
-        max=Constants.betray_payoff
+        choices=Constants.bribery_options
     )
     bribery2 = models.CurrencyField(
         initial=0,
         label='''How much do you want to request from player 2?''',
-        min=0,
-        max=Constants.betray_payoff
+        choices=Constants.bribery_options
     )
     bribery3 = models.CurrencyField(
         initial=0,
         label='''How much do you want to request from player 3?''',
-        min=0,
-        max=Constants.betray_payoff
+        choices=Constants.bribery_options
     )
     bribery4 = models.CurrencyField(
         initial=0,
         label='''How much do you want to request from player 4?''',
-        min=0,
-        max=Constants.betray_payoff
+        choices=Constants.bribery_options
     )
-    bribery5 = models.CurrencyField(
-        initial=0,
-        label='''How much do you want to request from player 5?''',
-        min=0,
-        max=Constants.betray_payoff
-    )
-    bribery6 = models.CurrencyField(
-        initial=0,
-        label='''How much do you want to request from player 6?''',
-        min=0,
-        max=Constants.betray_payoff
-    )#Whoever receives request from ob decides whether to accept it
+    # bribery5 = models.CurrencyField(
+    #     initial=0,
+    #     label='''How much do you want to request from player 5?''',
+    #     min=0,
+    #     max=Constants.betray_payoff
+    # )
+    # bribery6 = models.CurrencyField(
+    #     initial=0,
+    #     label='''How much do you want to request from player 6?''',
+    #     min=0,
+    #     max=Constants.betray_payoff
+    # )#Whoever receives request from ob decides whether to accept it
     bribery = models.BooleanField(
         choices=Constants.yes_no_choices,
         initial=False,
@@ -134,7 +131,7 @@ class Player(BasePlayer):
     # stage 1 query decision
     query = models.BooleanField(
         choices=Constants.yes_no_choices,
-        label=f"Do you want to spend {Constants.query_cost} to learn whether your match has unpaid fine in the past?",
+        label=f"Do you want to spend {Constants.query_cost} to receive a statement about the record of your match?",
     )
     # stage 2 PD decision
     decision = models.StringField(
@@ -159,7 +156,7 @@ class Player(BasePlayer):
     receivefine= models.BooleanField(initial=False)
 
     record = models.StringField(
-        initial='no unpaid fine',
+        initial='Good',
         choices=Constants.record_options,
         widget=widgets.RadioSelect
     )
@@ -553,7 +550,7 @@ def update_record(player: Player):
     partner= other_player(player)
     if player.guilty:
         if not player.payfine:
-            player.record = 'unpaid fine'
+            player.record = 'Bad'
         else:
             partner.receivefine = True
 
@@ -622,7 +619,8 @@ class Stage0RequestB(Page):
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.subsession.dishonesty is True and player.pair_id == 0
+        return player.subsession.dishonesty is True and player.pair_id == 0 and player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1 > 1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -726,6 +724,7 @@ class Stage1Outcome(Page):
             'my_record': me.record,
             'opponent_record': opponent.record,
             'opponent_refuse_bribery': opponent.bribery_requested != 0 and opponent.bribery == False,
+            'i_refuse_bribery': me.bribery == False and me.bribery_requested != 0,
             'me_query': me.query,
             'partner_query': opponent.query,
             'both_query': me.query == True and opponent.query == True,
@@ -898,6 +897,7 @@ class RoundResultsAc(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
+        continuation_chance = int(round(Constants.delta * 100))
         me = player
         opponent = other_player(player)  # TODO: How do I get the other player
         return {
@@ -908,8 +908,6 @@ class RoundResultsAc(Page):
             'both_defect': me.decision == "Action Z" and opponent.decision == "Action Z",
             'i_cooperate_he_defects': me.decision == "Action Y" and opponent.decision == "Action Z",
             'i_defect_he_cooperates': me.decision == "Action Z" and opponent.decision == "Action Y",
-            'cycle_round_number': player.round_number - player.session.vars['super_games_start_rounds'][
-                player.subsession.curr_super_game - 1] + 1,
             'my_query':me.query,
             'query_payment': me.query*Constants.query_cost,
             'my_bribery':me.bribery,
@@ -917,7 +915,12 @@ class RoundResultsAc(Page):
             'my_report':me.report,
             'my_payfine':me.payfine,
             'my_receivefine':me.receivefine,
-            'my_earning':me.payoff
+            'my_earning':me.payoff,
+            'dieroll':player.dieroll,
+            'continuation_chance': continuation_chance,
+            'die_threshold_plus_one': continuation_chance + 1,
+            'cycle_round_number': player.round_number - player.session.vars['super_games_start_rounds'][
+                player.subsession.curr_super_game - 1] + 1
         }
 class RoundResultsOb(Page):
     @staticmethod
@@ -925,13 +928,17 @@ class RoundResultsOb(Page):
         return player.pair_id == 0
     @staticmethod
     def vars_for_template(player: Player):
+        continuation_chance = int(round(Constants.delta * 100))
         return {'receive_bribery': get_bribery_income(player) != 0,
                 'bribery_income': get_bribery_income(player),
                 'cycle_round_number': player.round_number - player.session.vars['super_games_start_rounds'][
                     player.subsession.curr_super_game - 1] + 1,
                 'my_earning': player.payoff,
                 'query_list': get_query_list(player),
-                'query_income': Constants.query_payment*len(get_query_player(player))
+                'query_income': Constants.query_payment*len(get_query_player(player)),
+                'dieroll': player.dieroll,
+                'continuation_chance': continuation_chance,
+                'die_threshold_plus_one': continuation_chance + 1,
                 }
 #ac and ob would see the same end round outcome
 class EndRound(Page):
@@ -977,7 +984,7 @@ class End(Page):
 page_sequence = [
     # Introduction,
     # Instructions0,
-    ComprehensionTest,
+    # ComprehensionTest,
     AssignRole,
     FetchRecords,
     Stage0RequestB,
@@ -1003,7 +1010,7 @@ page_sequence = [
     RoundResultsWaitPage,
     RoundResultsAc,
     RoundResultsOb,
-    EndRound,
+    # EndRound,
     EndCycle,
     End
 ]

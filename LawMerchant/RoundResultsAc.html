@@ -2,10 +2,11 @@
 {% load otree static %}
 
 {{ block title }}
-    Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number}} &#8211; Results
+    Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number}}
 {{  endblock }}
 
 {{ block content }}
+<h4>Results</h4>
 <p>
 {{if my_bribery}}
     In stage 0, you gave the <i>observer</i> {{my_paidbribery}}.
@@ -39,6 +40,17 @@ In stage 3, you chose to report your match at cost of {{Constants.report_cost}}.
 </p>
 {{endif}}
 <p>Therefore, your earning from this round is <b>{{my_earning}}</b>. </p>
+
+<h4>Continue?</h4>
+<p> The computer rolled a 100-sided die to determine whether the match is over or continues to another round.</p>
+    {{if subsession.round_number in session.vars.super_games_end_rounds  }}
+<p>The die roll was <b style="color: darkred">{{ dieroll }}</b>.</p>
+        <p>Since the die roll was greater than {{ continuation_chance }}, the match is over.</p>
+    {{else}}
+<p>The die roll was <b style="color: darkred">{{ dieroll }}</b>.</p>
+        <p>Since the die roll was less than or equal to {{ continuation_chance }}, the match continues to another round.</p>
+    {{endif}}
+
 {{next_button}}
 {{ endblock }}
 

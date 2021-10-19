@@ -10,13 +10,13 @@ SESSION_CONFIGS = [
          name='honest',
          app_sequence=['LawMerchant'],
          dishonesty=False,
-         num_demo_participants=14,
+         num_demo_participants=10,
      ),
     dict(
          name='dishonest',
          app_sequence=['LawMerchant'],
          dishonesty=True,
-         num_demo_participants=14,
+         num_demo_participants=10,
      ),
 
     # dict(

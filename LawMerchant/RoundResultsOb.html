@@ -6,7 +6,7 @@
 {{  endblock }}
 
 {{ block content }}
-
+<h4>Results</h4>
 {{if receive_bribery}}
     <p> In stage 0, you received {{bribery_income}} from <i>active participants</i>.
     <br>
@@ -25,6 +25,16 @@
     <br>
     Your earning from this round is <b>{{my_earning}}</b>. </p>
 {{endif}}
+
+<h4>Continue?</h4>
+<p> The computer rolled a 100-sided die to determine whether the match is over or continues to another round.</p>
+    {{if subsession.round_number in session.vars.super_games_end_rounds  }}
+<p>The die roll was <b style="color: darkred">{{ dieroll }}</b>.</p>
+        <p>Since the die roll was greater than {{ continuation_chance }}, the match is over.</p>
+    {{else}}
+<p>The die roll was <b style="color: darkred">{{ dieroll }}</b>.</p>
+        <p>Since the die roll was less than or equal to {{ continuation_chance }}, the match continues to another round.</p>
+    {{endif}}
 
 {{next_button}}
 {{ endblock }}

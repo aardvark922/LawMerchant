@@ -52,12 +52,12 @@ Query from <span style="font-style: italic">active participants</span>
         {{refuse_bribery_list}} rejected to pay you.
     {{endif}}
     <br>
-    The table below shows the messages to be sent.
+    The table below shows the statements to be sent.
 </p>
 <table class="table" style="width: 600px; height: 200px">
     <tr>
         <th>ID</th>
-        <th>Message to send</th>
+        <th>Statement to send</th>
     </tr>
     {{ for p in active_players_query_results}}
         {{if p.partner_bribery_request and not p.partner_bribery}}
@@ -65,16 +65,21 @@ Query from <span style="font-style: italic">active participants</span>
             <td style="font-weight: bold">{{ p.id }}</td>
             <td>
                 {{if p.query and p.partner_query}}
-                    Your have {{p.record}}.
-                    Your match's has unpaid fine.
+                    Your record is {{p.record}}.
+                    Your match's record is Bad.
                 {{elif not p.query and not p.partner_query}}
                 No record will be shared with you.
 
                 {{elif p.query and not p.partner_query}}
-                Your match has unpaid fine.
+                Your match's record is Bad.
 
                 {{else}}
-                You have {{p.record}}.
+                {{if p.record == 'Good'}}
+                Your record is {{p.record}}. However, your match will receive a statement saying that your record is Bad
+                since you rejected to give the requested amount to the <i>observer</i>.
+                {{else}}
+                Your record is {{p.record}}.
+                {{endif}}
                 {{endif}}
             </td>
         </tr>
@@ -83,16 +88,16 @@ Query from <span style="font-style: italic">active participants</span>
             <td style="font-weight: bold">{{ p.id }}</td>
             <td>
                 {{if p.query and p.partner_query}}
-                    Your have {{p.record}}.
-                    Your match's has {{p.partner_record}}.
+                    Your record is {{p.record}}.
+                    Your match's record is {{p.partner_record}}.
                 {{elif not p.query and not p.partner_query}}
                 No record will be shared with you.
 
                 {{elif p.query and not p.partner_query}}
-                Your match has {{p.partner_record}}.
+                Your match's record is {{p.partner_record}}.
 
                 {{else}}
-                You have {{p.record}}.
+                Your record is {{p.record}}.
                 {{endif}}
             </td>
         </tr>
@@ -101,28 +106,28 @@ Query from <span style="font-style: italic">active participants</span>
 </table>
 <!-- For honest treatment-->
 {{else}}
-<p>{{query_list}} queried. The table below shows the messages to be sent.</p>
+<p>{{query_list}} queried. The table below shows the statements to be sent.</p>
 
 <table class="table" style="width: 600px; height: 200px">
     <tr>
         <th>ID</th>
-        <th>Message to send</th>
+        <th>Statement to send</th>
     </tr>
     {{ for p in active_players_query_results}}
     <tr>
         <td style="font-weight: bold">{{ p.id }}</td>
         <td>
             {{if p.query and p.partner_query}}
-                Your have {{p.record}}.
-                Your match's has {{p.partner_record}}.
+                Your record is {{p.record}}.
+                Your match's record is {{p.partner_record}}.
             {{elif not p.query and not p.partner_query}}
             No record will be shared with you.
 
             {{elif p.query and not p.partner_query}}
-            Your match has {{p.partner_record}}.
+            Your match's record is {{p.partner_record}}.
 
             {{else}}
-            You have {{p.record}}.
+            Your record is {{p.record}}.
             {{endif}}
         </td>
     </tr>
@@ -130,7 +135,7 @@ Query from <span style="font-style: italic">active participants</span>
 </table>
 {{endif}}
 {{else}}
-<p>None of the <i>active participants</i> queried you. Hence, there's no message to send.</p>
+<p>None of the <i>active participants</i> queried you. Hence, there's no statement to send.</p>
 {{endif}}
 </table>
   </div>

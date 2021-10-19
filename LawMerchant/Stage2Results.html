@@ -147,16 +147,18 @@
     </p>
 
 
-{{if no_query}}
-<p>Since none of you queried in Stage 1, your round ends here.</p>
-{{elif he_query}}
-<p></p>
-{{else}}
+{{if me_query and i_cooperate_he_defects}}
 <h4>Stage 3 Your report decision</h4>
 <br>
 <p>You queried the <i>observer</i> in Stage 1.
-    Now you have the opportunity to report your partner to the <i>observer</i> .</p>
-    {{ formfields }}
+        Now you have the opportunity to report your partner to the <i>observer</i>.</p>
+        {{ formfields }}
+{{elif no_query}}
+<p>Since none of you queried in Stage 1, your current round ends here.</p>
+{{elif he_query}}
+<p>Your match queried the <i>observer</i> in Stage 1. Your match is deciding whether to report.</p>
+{{else}}
+<p></p>
 {{endif}}
 
     {% next_button %}
