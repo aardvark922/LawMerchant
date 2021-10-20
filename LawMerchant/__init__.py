@@ -14,8 +14,8 @@ class Constants(BaseConstants):
     instructions_template = 'LawMerchant/instructions.html'
     summary_template = 'LawMerchant/summary.html'
     players_per_group = None
-    num_super_games = 2  # 5 in experiment
-    delta = 0.3  # discount factor equals to 0.90 in experiment
+    num_super_games = 5  # 5 in experiment
+    delta = 0.9  # discount factor equals to 0.90 in experiment
 
     time_limit = 60 * 20
     time_limit_seconds = 60 * 20
@@ -85,6 +85,31 @@ class Player(BasePlayer):
     )
     quiz5 = models.BooleanField(
         label="5. If you are an active participant, you will not know the identity of your matches.",
+        choices=Constants.true_false_choices
+    )
+    quiz6 = models.BooleanField(
+        label="6. If you are an active player in current cycle, "
+              "you can report to the observer even if you didn’t ask for a statement about my match.",
+        choices=Constants.true_false_choices
+    )
+    quiz7 = models.BooleanField(
+        label="7. If you are an active player in current cycle, if you reject to pay a fine, "
+              "your record will become Bad for the remainder of this cycle.",
+        choices=Constants.true_false_choices
+    )
+    quiz8 = models.BooleanField(
+        label="8. If you are an active player in current cycle, "
+              "if you reject to give the requested number of points to the observer, your record will become Bad.",
+        choices=Constants.true_false_choices
+    )
+    quiz9 = models.BooleanField(
+        label=f"9. If you are the observer in current cycle, "
+              f"your sources of earning in each round are only a flat rate of {Constants.observer_payoff} and the payment from queries.",
+        choices=Constants.true_false_choices
+    )
+    quiz10 = models.BooleanField(
+        label="10. If you are the observer in current cycle, "
+              "and if an active participant accepts to pay the fine, you will change his/her record to “Bad”.",
         choices=Constants.true_false_choices
     )
     # stage 0 bribery decision
@@ -600,7 +625,6 @@ class Instructions1(Page):
 
 class ComprehensionTest(Page):
     form_model = 'player'
-    form_fields = ['quiz1', 'quiz2', 'quiz3', 'quiz4', 'quiz5']
 
     # instruction will be shown to players before they start the game
     @staticmethod
@@ -608,10 +632,21 @@ class ComprehensionTest(Page):
         return player.round_number == 1
 
     @staticmethod
+    def get_form_fields(player):
+        if player.subsession.dishonesty is True:
+            #comprehentions test for dishonest treatment
+            return ['quiz1', 'quiz2', 'quiz3', 'quiz4', 'quiz5','quiz6','quiz7','quiz8','quiz9','quiz10']
+        else:
+            return ['quiz1', 'quiz2', 'quiz3', 'quiz4', 'quiz5']
+
+    @staticmethod
     def error_message(player: Player, values):
         # alternatively, you could make quiz1_error_message, quiz2_error_message, etc.
         # but if you have many similar fields, this is more efficient.
-        solutions = dict(quiz1=0, quiz2=2, quiz3=0, quiz4=1, quiz5=1)
+        if player.subsession.dishonesty is True:
+            solutions = dict(quiz1=0, quiz2=2, quiz3=0, quiz4=1, quiz5=1, quiz6=0, quiz7=1, quiz8=0, quiz9=0,quiz10=0)
+        else:
+            solutions = dict(quiz1=0, quiz2=2, quiz3=0, quiz4=1, quiz5=1)
 
         errors = {f: 'Wrong Answer. You may refer to Instructions.' for f in solutions if values[f] != solutions[f]}
         if errors:
@@ -1039,8 +1074,6 @@ page_sequence = [
     Stage2Decision,
     Stage2ResultsWaitPage,
     Stage2Results,
-    # S3ObWait,
-    # S3AcWait,
     JudgeWaitPage,
     Stage4Judge,
     S4ObWait,
@@ -1051,7 +1084,6 @@ page_sequence = [
     RoundResultsWaitPage,
     RoundResultsAc,
     RoundResultsOb,
-    # EndRound,
     EndCycle,
     End
 ]

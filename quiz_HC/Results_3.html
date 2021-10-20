@@ -1,0 +1,221 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Receiver Guess Plan
+{% endblock %}
+
+{% block content %}
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+
+<br>
+<div class = "left_column">
+
+    3.	Suppose you are the Receiver and you chose “Observe”. According of the figure below, what are the probabilities of a message being sent if the ball drawn is Blue?<br>
+
+<b>Your answer is {% if player.Q3_choice == 2%} Correct{% else %}Wrong{% endif %}. </b><br>
+<br>
+
+    Common Communication Plan is selected by the computer to send a message. <br>
+    Hidden Communication Plan is not selected so it is opaque. <br>
+    The drawn ball is Blue. So the right bar in Common Communication Plan is used to send the message, which specifies sending message Red 34% of the time and message Blue 66% of the time.<br>
+
+<br><br>
+<div style="width: 50%; float:left" class = "left_box">
+    <div id="plan 1" style="min-width: 280px; height: 400px; margin: 0 auto"></div>
+</div>
+<div style="width: 50%; float:left" class = "right_box">
+
+    <div id="plan 2" style="min-width: 280px; height: 400px; margin: 0 auto;"></div>
+
+<div style="width: 100%; height:1px;  vertical-align: middle;" class = "break_box">
+    <br>
+</div>
+
+</div>
+
+</div>
+    <br><br><br>
+    {% next_button %}
+<div style="width: 100%; height:1px;  vertical-align: middle;" class = "break_box">
+
+
+{% endblock %}
+
+{% block styles %}
+<style>
+
+
+.column {
+    float: left;
+    width: 33%;
+    padding: 10px;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.otree-btn-next {
+    position: relative;
+    left: 100%;
+ }
+
+div.break_box {
+    vertical-align: middle;
+     clear: both;
+}
+
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+
+Highcharts.chart('plan 1', {
+    colors: ['red','blue','yellow','pink','green'],
+    exporting: { enabled: false },
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: 'COMMON COMMUNICATION PLAN'
+    },
+    xAxis: {
+        categories: ['If ball is RED', 'If ball is BLUE']
+    },
+    yAxis: {
+        min: 0,
+        max: 100,
+        title: {
+            text: 'Probabilities'
+        },
+        stackLabels: {
+            enabled: true,
+            style: {
+                fontWeight: 'bold',
+                color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+            }
+        }
+    },
+    legend: {
+        align: 'center',
+        x: -30,
+        verticalAlign: 'bottom',
+        y: 15,
+        floating: false,
+        backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+        borderColor: '#CCC',
+        borderWidth: 1,
+        shadow: false
+    },
+    tooltip: {
+        headerFormat: '<b>{point.x}</b><br/>',
+        pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+    },
+    plotOptions: {
+        column: {
+            stacking: 'normal',
+            dataLabels: {
+                enabled: true,
+                color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+            },
+            events: {
+                legendItemClick: function () {
+                    return false;
+                }
+            },
+        }
+    },
+    credits: {
+      enabled: false
+    },
+    series: [{
+        name: 'Send Red Message',
+        data: [100, {{34}}]
+    }, {
+        name: 'Send Blue Message',
+        data: [0, {{66}}]
+    }, ]
+});
+
+
+Highcharts.chart('plan 2', {
+    colors: ['red','blue','yellow','pink','green'],
+    exporting: { enabled: false },
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: 'Hidden COMMUNICATION PLAN'
+    },
+    xAxis: {
+        categories: ['If ball is RED', 'If ball is BLUE']
+    },
+    yAxis: {
+        min: 0,
+        max: 100,
+        title: {
+            text: 'Probabilities'
+        },
+        stackLabels: {
+            enabled: true,
+            style: {
+                fontWeight: 'bold',
+                color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray',
+            }
+        }
+    },
+    legend: {
+        align: 'center',
+        x: -30,
+        verticalAlign: 'bottom',
+        y: 15,
+        floating: false,
+        backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+        borderColor: '#CCC',
+        borderWidth: 1,
+        shadow: false
+    },
+    tooltip: {
+        headerFormat: '<b>{point.x}</b><br/>',
+        pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+    },
+    plotOptions: {
+        column: {
+            stacking: 'normal',
+            dataLabels: {
+                enabled: true,
+                color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+            },
+            events: {
+                legendItemClick: function () {
+                    return false;
+                }
+            },
+        }
+    },
+    credits: {
+      enabled: false
+    },
+    series: [{
+        name: 'Send Red Message',
+        data: [100, {{ 65 }}],opacity:0.3
+    }, {
+        name: 'Send Blue Message',
+        data: [0, {{ 35}}],opacity:0.3
+    }, ]
+});
+
+</script>
+
+{% endblock %}
+

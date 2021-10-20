@@ -1,0 +1,21 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Results
+{% endblock %}
+
+{% block content %}
+<b>Your answer is {% if player.Q1_choice == 1%} Correct{% else %}Wrong{% endif %}. </b><br>
+<br>
+The correct answers are marked with &#9745 below. <br><br>
+1. True or False. If the receiver chooses "Not Observe" in Stage 2, the receiver can still observe Common Communication Plan but Hidden Communication Plan is not shown.<br>
+&#9745 True<br>
+False<br>
+
+<br><br>
+
+{% next_button %}
+{% endblock %}
+
+

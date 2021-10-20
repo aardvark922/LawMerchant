@@ -1,0 +1,47 @@
+{% extends "global/Page.html" %}
+{% load otree %}
+
+{% block title %}
+Comprehension Quiz
+{% endblock %}
+
+{% block content %}
+
+You will get 4 points for each of the question you correctly answer.<br>
+<br><br>
+Q1. True or False. If the receiver chooses "Not Observe" in Stage 2, the receiver can still observe Common Communication Plan but Hidden Communication Plan is not shown.
+
+{% formfield player.Q1_choice %}
+
+<br>
+
+Q2. True or False. When the ball drawn is Red, the sender will always send message Red. When the ball drawn is Blue, the sender may send message Red or Blue.
+
+{% formfield player.Q2_choice %}
+
+<br>
+
+Q3. True or False. The sender knows the color of the ball drawn when designing the two Communication Plans.
+
+{% formfield player.Q3_choice %}
+
+<br>
+
+Q4. If the receiver chooses "Observe" and the Guess Plan is: Guess <font color="blue">Blue</font> when message is <font color="red">Red</font> and<br>
+Guess <font color="blue">Blue</font> when the message is <font color="blue">Blue</font>.<br>
+The message is <font color="red">Red</font>.<br>
+What will be the receiver's guess in this round?
+
+{% formfield player.Q4_choice %}
+
+<br>
+
+Q5. Following Q4, Suppose the color of the ball drawn is <font color="blue">Blue</font>, what will be the payoffs for the sender and the receiver?
+
+{% formfield player.Q5_choice %}
+
+<br><br>
+
+{% next_button %}
+
+{% endblock %}

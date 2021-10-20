@@ -1,0 +1,23 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Recap of the Instructions
+{% endblock %}
+
+
+{% block content %}
+1.	At the beginning of each round, the computer draws one ball from an urn with three balls. Two balls are Blue and one ball is Red.<br><br>
+2.	Before observing the color of the drawn ball, the sender designs two Communication Plans.  Common Communication Plan is always shown, while Hidden Communication Plan is initially hidden from the receiver.<br><br>
+3.	The computer makes a random draw to determine whether Common Communication Plan or Hidden Communication Plan is used to send a message. <br><br>
+4.	The receiver can choose to observe or not observe Hidden Communication Plan as well as the exact Communication Plan used to send the message. The observation cost will be shown on the screen later.<br><br>
+5.	When the message is Blue, the ball is definitely Blue. When the message is Red, the ball can be Red or Blue based on the probabilities specified by the sender.<br><br>
+6.	Participants will be randomly rematched in each round. Your role will be fixed for all rounds of the experiment. <br><br>
+
+<br>
+Clicking on the Next button will lead you to the comprehension quiz questions.<br>
+You will get 50 cents for each of the question you correctly answer. <br>
+{% next_button %}
+{% endblock %}
+
+

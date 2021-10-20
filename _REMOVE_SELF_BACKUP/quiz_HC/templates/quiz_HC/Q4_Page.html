@@ -1,0 +1,24 @@
+{% extends "global/Page.html" %}
+{% load otree %}
+
+{% block content %}
+4. If the receiver chooses "Observe" and the Guess Plan is: <br>
+
+If the message is <font color="red">Red</font> , guess <font color="blue">Blue</font>.<br>
+If the message is <font color="blue">Blue</font>, guess <font color="blue">Blue</font>.<br>
+The message is <font color="red">Red</font>.<br>
+What will be the receiver's guess in this round?
+
+{% formfield player.Q4_choice %}
+
+<br>
+
+5. Following Q4, Suppose the color of the ball drawn is <font color="blue">Blue</font> and the observation cost is {{Constants.cost}}, what will be the payoffs for the sender and the receiver?
+
+{% formfield player.Q5_choice %}
+
+<br><br>
+{% next_button %}
+
+{% endblock %}
+

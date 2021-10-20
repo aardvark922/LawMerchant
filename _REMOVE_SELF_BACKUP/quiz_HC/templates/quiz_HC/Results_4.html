@@ -1,0 +1,40 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Results
+{% endblock %}
+
+
+{% block content %}
+<b>Your answer for Q4 is {% if player.Q4_choice == 2%} Correct{% else %}Wrong{% endif %}. </b><br>
+<b>Your answer for Q5 is {% if player.Q5_choice == 2%} Correct{% else %}Wrong{% endif %}. </b><br>
+<br>
+<br>
+The correct answers are marked with &#9745 below. <br><br>
+
+4. If the receiver chooses "Observe" and the Guess Plan is: <br>
+
+If the message is <font color="red">Red</font> , guess <font color="blue">Blue</font>.<br>
+If the message is <font color="blue">Blue</font>, guess <font color="blue">Blue</font>.<br>
+The message is <font color="red">Red</font>.<br>
+What will be the receiver's guess in this round?
+<br>
+Red<br>
+&#9745 Blue <br>
+
+<br><br>
+
+5. Following Q4, Suppose the color of the ball drawn is <font color="blue">Blue</font> and the observation cost is {{Constants.cost}}, what will be the payoffs for the sender and the receiver?<br>
+(Sender 15, Receiver 11) <br>
+&#9745 (Sender 5, Receiver 11) <br>
+(Sender 15, Receiver 1) <br>
+(Sender 5, Receiver 1) <br>
+
+
+<br><br>
+
+{% next_button %}
+{% endblock %}
+
+

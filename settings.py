@@ -8,7 +8,7 @@ SESSION_CONFIGS = [
      ),
     dict(
          name='honest',
-         app_sequence=['LawMerchant'],
+         app_sequence=['LawMerchant', 'demographics'],
          dishonesty=False,
          num_demo_participants=10,
      ),

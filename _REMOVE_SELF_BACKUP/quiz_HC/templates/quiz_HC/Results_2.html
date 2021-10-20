@@ -1,0 +1,23 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Results
+{% endblock %}
+
+
+{% block content %}
+<b>Your answer is {% if player.Q2_choice == 1%} Correct{% else %}Wrong{% endif %}. </b><br>
+<br>
+The correct answers are marked with &#9745 below. <br><br>
+
+2. True or False. When the message is Blue, the drawn ball is definitely Blue. When the message is Red, the higher the probability the Sender chose to send message Red when the drawn ball is Blue, the lower the probability that the drawn ball is Blue.<br>
+&#9745 True<br>
+False<br>
+
+<br><br>
+
+{% next_button %}
+{% endblock %}
+
+
