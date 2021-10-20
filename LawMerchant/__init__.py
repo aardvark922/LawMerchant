@@ -15,7 +15,7 @@ class Constants(BaseConstants):
     summary_template = 'LawMerchant/summary.html'
     players_per_group = None
     num_super_games = 2  # 5 in experiment
-    delta = 0.9  # discount factor equals to 0.90 in experiment
+    delta = 0.3  # discount factor equals to 0.90 in experiment
 
     time_limit = 60 * 20
     time_limit_seconds = 60 * 20
@@ -89,25 +89,29 @@ class Player(BasePlayer):
     )
     # stage 0 bribery decision
     #Observer decides whether to request any active participants.
-    bribery1 = models.CurrencyField(
+    bribery1 = models.IntegerField(
         initial=0,
-        label='''How much do you want to request from player 1?''',
-        choices=Constants.bribery_options
+        label='''How many points do you want to request from player 1?''',
+        choices=Constants.bribery_options,
+        widget=widgets.RadioSelectHorizontal
     )
-    bribery2 = models.CurrencyField(
+    bribery2 = models.IntegerField(
         initial=0,
-        label='''How much do you want to request from player 2?''',
-        choices=Constants.bribery_options
+        label='''How many points do you want to request from player 2?''',
+        choices=Constants.bribery_options,
+        widget=widgets.RadioSelectHorizontal
     )
-    bribery3 = models.CurrencyField(
+    bribery3 = models.IntegerField(
         initial=0,
-        label='''How much do you want to request from player 3?''',
-        choices=Constants.bribery_options
+        label='''How many points do you want to request from player 3?''',
+        choices=Constants.bribery_options,
+        widget=widgets.RadioSelectHorizontal
     )
-    bribery4 = models.CurrencyField(
+    bribery4 = models.IntegerField(
         initial=0,
-        label='''How much do you want to request from player 4?''',
-        choices=Constants.bribery_options
+        label='''How many points do you want to request from player 4?''',
+        choices=Constants.bribery_options,
+        widget=widgets.RadioSelectHorizontal
     )
     # bribery5 = models.CurrencyField(
     #     initial=0,
@@ -124,7 +128,7 @@ class Player(BasePlayer):
     bribery = models.BooleanField(
         choices=Constants.yes_no_choices,
         initial=False,
-        label="Do you want to give the observer his/her requested amount?",
+        label="Do you want to give the requested amount to the observer ?",
     )
     #the amount of bribery a player give the observer
     bribery_requested= models.CurrencyField(initial=0,)
@@ -197,7 +201,10 @@ def creating_session(subsession: Subsession):
         # subsession.session.vars['super_games_end_rounds'] = list(accumulate(super_games_duration))
         subsession.session.vars['super_games_end_rounds'] = [sum(super_games_duration[:i + 1]) for i in
                                                              range(len(super_games_duration))]
+
+        subsession.session.vars['last_round'] = subsession.session.vars['super_games_end_rounds'][const.num_super_games-1]
         print('supergames end at rounds:', subsession.session.vars['super_games_end_rounds'])
+        print('the last round of the experiment is:', subsession.session.vars['last_round'])
         # subsession.session.vars['super_games_start_rounds'] = [1] + [r + 1 for r in
         #                                                              subsession.session.vars['super_games_end_rounds'][
         #                                                              1:]]
@@ -428,7 +435,7 @@ def get_bribery_amount(player:Player):
     if player.pair_id !=0:
         field_name = 'bribery{}'.format(player.id_in_group)
         observer = get_observer(player)
-        bribery_amount = getattr(observer, field_name)
+        bribery_amount = cu(getattr(observer, field_name))
     return bribery_amount
 
 def get_bribery_amounts(group:Group):
@@ -584,6 +591,12 @@ class Instructions0(Page):
         continuation_chance = int(round(Constants.delta * 100))
         return dict(continuation_chance=continuation_chance, end_chance=100 - continuation_chance)
 
+class Instructions1(Page):
+    # instruction will be shown to players before they start the game
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number == 1
+
 
 class ComprehensionTest(Page):
     form_model = 'player'
@@ -620,7 +633,7 @@ class Stage0RequestB(Page):
     @staticmethod
     def is_displayed(player: Player):
         return player.subsession.dishonesty is True and player.pair_id == 0 and player.round_number - player.session.vars['super_games_start_rounds'][
-                            player.subsession.curr_super_game - 1] + 1 > 1
+                            player.subsession.curr_super_game - 1] + 1 > 1 and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -637,7 +650,7 @@ class Stage0Bribery(Page):
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.bribery_requested != 0
+        return player.bribery_requested != 0 and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -651,18 +664,19 @@ class BriberyResultsWait(WaitPage):
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.subsession.dishonesty is True
+        return player.subsession.dishonesty is True and player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1 > 1 and player.round_number< player.session.vars['last_round']+1
 
 class S0ObWait(WaitPage):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id == 0 and player.subsession.dishonesty is True
+        return player.pair_id == 0 and player.subsession.dishonesty is True and player.round_number< player.session.vars['last_round']+1
 
 
 class S0AcWait(WaitPage):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id != 0
+        return player.pair_id != 0 and player.round_number< player.session.vars['last_round']+1
 
 
 
@@ -673,7 +687,7 @@ class Stage1Query(Page):
     @staticmethod
     # The decision page will not be displayed to observer
     def is_displayed(player: Player):
-        return player.pair_id != 0
+        return player.pair_id != 0 and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -686,19 +700,19 @@ class Stage1Query(Page):
 class S1ObWait(WaitPage):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id == 0
+        return player.pair_id == 0 and player.round_number< player.session.vars['last_round']+1
 
 
 class S1AcWait(WaitPage):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id != 0
+        return player.pair_id != 0 and player.round_number< player.session.vars['last_round']+1
 
 class Stage1Observer(Page):
     # The decision page will only be displayed to observer
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id == 0
+        return player.pair_id == 0 and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -714,7 +728,7 @@ class Stage1Observer(Page):
 class Stage1Outcome(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id != 0
+        return player.pair_id != 0 and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -743,7 +757,7 @@ class Stage2Decision(Page):
     @staticmethod
     # The decision page will not be displayed to observer
     def is_displayed(player: Player):
-        return player.pair_id != 0
+        return player.pair_id != 0 and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -759,12 +773,12 @@ class Stage2Results(Page):
     # report option will only be available to whoever queried in s1
     @staticmethod
     def get_form_fields(player):
-        if player.query:
+        if player.query and player.decision == "Action Y" and other_player(player).decision == "Action Z":
             return ['report']
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id != 0
+        return player.pair_id != 0 and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -791,20 +805,20 @@ class Stage2Results(Page):
 class S3ObWait(WaitPage):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id == 0
+        return player.pair_id == 0 and player.round_number< player.session.vars['last_round']+1
 
 class S3AcWait(WaitPage):
     #active participants wait while observer in stage 4 makes judgement
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id != 0
+        return player.pair_id != 0 and player.round_number< player.session.vars['last_round']+1
 
 
 class Stage4Judge(Page):
     # The decision page will only be displayed to observer
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id == 0
+        return player.pair_id == 0 and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -819,13 +833,13 @@ class Stage4Judge(Page):
 class S4ObWait(WaitPage):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id == 0
+        return player.pair_id == 0 and player.round_number< player.session.vars['last_round']+1
 
 class S4AcWait(WaitPage):
     #active participants wait while observer in stage 4 makes judgement
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id != 0
+        return player.pair_id != 0 and player.round_number< player.session.vars['last_round']+1
 
 class Stage5Fine(Page):
     form_model = 'player'
@@ -833,7 +847,7 @@ class Stage5Fine(Page):
     #This page will only displayed to an active participant who has been reported by his match and the report is valid
     @staticmethod
     def is_displayed(player: Player):
-        return player.guilty
+        return player.guilty and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -845,18 +859,18 @@ class Stage5Fine(Page):
 class S5ObWait(WaitPage):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id == 0
+        return player.pair_id == 0 and player.round_number< player.session.vars['last_round']+1
 
 class S5AcWait(WaitPage):
     #active participants wait while observer in stage 4 makes judgement
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id != 0
+        return player.pair_id != 0 and player.round_number< player.session.vars['last_round']+1
 
 class Stage6Update(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id == 0
+        return player.pair_id == 0 and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -874,26 +888,45 @@ class FetchRecords(WaitPage):
 
     @staticmethod
     def is_displayed(player: Player):
+
         return player.round_number - player.session.vars['super_games_start_rounds'][
-                player.subsession.curr_super_game - 1] + 1 != 1
+                player.subsession.curr_super_game - 1] + 1 != 1 and player.round_number< player.session.vars['last_round']+1
 
 class RecordsWaitPage(WaitPage):
     after_all_players_arrive = update_records
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number < player.session.vars['last_round'] + 1
 
 class Stage2ResultsWaitPage(WaitPage):
     after_all_players_arrive = pd_set_payoffs
 
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number < player.session.vars['last_round'] + 1
+
+
 class JudgeWaitPage(WaitPage):
     after_all_players_arrive = judge_reports
 
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number < player.session.vars['last_round'] + 1
+
+
 class RoundResultsWaitPage(WaitPage):
     after_all_players_arrive = round_payoff_and_roll_die
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number < player.session.vars['last_round'] + 1
+
 # Set payoff for this round and at mean time roll a die
 
 class RoundResultsAc(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id != 0
+        return player.pair_id != 0 and player.round_number< player.session.vars['last_round']+1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -925,7 +958,7 @@ class RoundResultsAc(Page):
 class RoundResultsOb(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id == 0
+        return player.pair_id == 0 and player.round_number< player.session.vars['last_round']+1
     @staticmethod
     def vars_for_template(player: Player):
         continuation_chance = int(round(Constants.delta * 100))
@@ -942,6 +975,9 @@ class RoundResultsOb(Page):
                 }
 #ac and ob would see the same end round outcome
 class EndRound(Page):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number < player.session.vars['last_round'] + 1
     @staticmethod
     def vars_for_template(player: Player):
         continuation_chance = int(round(Constants.delta * 100))
@@ -960,7 +996,7 @@ class EndCycle(Page):
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number == player.session.vars['super_games_end_rounds'][
-            player.subsession.curr_super_game - 1]
+            player.subsession.curr_super_game - 1] and player.round_number < player.session.vars['last_round'] + 1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -970,8 +1006,7 @@ class EndCycle(Page):
 class End(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number == player.session.vars['super_games_end_rounds'][
-            Constants.num_super_games-1]
+        return player.round_number == player.session.vars['last_round']
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -979,12 +1014,18 @@ class End(Page):
                     conversion_rate=player.session.config['real_world_currency_per_point'],
                     participation_fee=player.session.config['participation_fee'],
                     cycle_earning_list=cycle_earning_list(player))
+#jump to demographics after this page
+    @staticmethod
+    def app_after_this_page(player, upcoming_apps):
+        if player.round_number == player.session.vars['last_round']:
+            return upcoming_apps[0]
 
 
 page_sequence = [
     # Introduction,
     # Instructions0,
-    # ComprehensionTest,
+    Instructions1,
+    ComprehensionTest,
     AssignRole,
     FetchRecords,
     Stage0RequestB,

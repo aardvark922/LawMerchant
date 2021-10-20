@@ -2,7 +2,7 @@
 <style>
     .column {
   float: left;
-  width: 50%;
+  width: 45%;
   padding: 15px;
 }
 .row:after {
@@ -60,48 +60,45 @@ Query from <span style="font-style: italic">active participants</span>
         <th>Statement to send</th>
     </tr>
     {{ for p in active_players_query_results}}
-        {{if p.partner_bribery_request and not p.partner_bribery}}
+
         <tr>
             <td style="font-weight: bold">{{ p.id }}</td>
             <td>
                 {{if p.query and p.partner_query}}
-                    Your record is {{p.record}}.
-                    Your match's record is Bad.
-                {{elif not p.query and not p.partner_query}}
-                No record will be shared with you.
-
-                {{elif p.query and not p.partner_query}}
-                Your match's record is Bad.
-
-                {{else}}
-                {{if p.record == 'Good'}}
-                Your record is {{p.record}}. However, your match will receive a statement saying that your record is Bad
-                since you rejected to give the requested amount to the <i>observer</i>.
-                {{else}}
-                Your record is {{p.record}}.
-                {{endif}}
-                {{endif}}
-            </td>
-        </tr>
-    {{else}}
-        <tr>
-            <td style="font-weight: bold">{{ p.id }}</td>
-            <td>
-                {{if p.query and p.partner_query}}
-                    Your record is {{p.record}}.
+                    {{if p.bribery_request and not p.bribery and p.record == 'Good' }}
                     Your match's record is {{p.partner_record}}.
-                {{elif not p.query and not p.partner_query}}
-                No record will be shared with you.
+                    Your record is {{p.record}}. However, your match will receive a statement saying that "Your match's record is Bad"
+                since you rejected to give the requested amount.
+                    {{elif p.partner_bribery_request and not p.partner_bribery}}
+                    Your match's record is Bad.
+                    Your match choose to query. Your record is {{p.record}}.
+                    {{else}}
+                    Your match's record is {{p.partner_record}}.
+                    Your match choose to query. Your record is {{p.record}}.
+                {{endif}}
 
                 {{elif p.query and not p.partner_query}}
-                Your match's record is {{p.partner_record}}.
+                    {{if p.partner_bribery_request and not p.partner_bribery}}
+                    Your match's record is Bad.
+                    {{else}}
+                    Your match's record is {{p.partner_record}}.
+                    {{endif}}
 
+                {{elif not p.query and p.partner_query }}
+                    {{if p.bribery_request and not p.bribery and p.record == 'Good' }}
+                    Your record is {{p.record}}. However, your match will receive a statement saying that "Your match's record is Bad"
+                since you rejected to give the requested amount.
+                    {{else}}
+                    Your match choose to query. Your record is {{p.record}}.
+                {{endif}}
                 {{else}}
-                Your record is {{p.record}}.
+                No record will be shared with you.
                 {{endif}}
             </td>
         </tr>
-    {{endif}}
+    <!-- delete-->
+
+    <!-- delete-->
     {{ endfor }}
 </table>
 <!-- For honest treatment-->

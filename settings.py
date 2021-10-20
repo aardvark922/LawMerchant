@@ -4,7 +4,7 @@ SESSION_CONFIGS = [
     dict(
          name='control',
          app_sequence=['control'],
-         num_demo_participants=14,
+         num_demo_participants=10,
      ),
     dict(
          name='honest',
@@ -14,11 +14,16 @@ SESSION_CONFIGS = [
      ),
     dict(
          name='dishonest',
-         app_sequence=['LawMerchant'],
+         app_sequence=['LawMerchant', 'demographics'],
          dishonesty=True,
          num_demo_participants=10,
      ),
 
+    dict(
+        name='demographics',
+        app_sequence=['demographics'],
+        num_demo_participants=1,
+    ),
     # dict(
     #     name='Prisoner_Dilemma',
     #     app_sequence=['Prisoner_Dilemma'],
@@ -47,12 +52,14 @@ SESSION_CONFIGS = [
 # e.g. self.session.config['participation_fee']
 
 SESSION_CONFIG_DEFAULTS = dict(
-    real_world_currency_per_point=0.01,
+    real_world_currency_per_point=0.02,
     participation_fee=5.00,
     # use_browser_bots=True,
     doc=""
 )
 
+PARTICIPANT_FIELDS = [ 'cycle_earning_list', 'num_super_games' ]
+SESSION_FIELDS = [ 'super_games_start_rounds', 'super_games_end_rounds' ]
 # ISO-639 code
 # for example: de, fr, ja, ko, zh-hans
 LANGUAGE_CODE = 'en'

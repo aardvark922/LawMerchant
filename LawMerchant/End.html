@@ -2,12 +2,12 @@
 {% load otree static %}
 
 {% block title %}
-    The Experiment is Over!
+   Summary of earnings
 {% endblock %}
 
 {% block content %}
 
-<p>This ends Cycle {{Constants.num_super_games }} and, thus, ends the experiment.</p>
+<p>This ends Cycle {{Constants.num_super_games }}.</p>
 
 <p>Below shows a summary of your earnings in each cycle</p>
 <table  border="0" cellpadding="0" cellspacing="0" width="200px" class="scrollTable">
@@ -32,10 +32,12 @@
     {{participation_fee}} for participating our experiment. </p>
 
 <p>    In total, your payment for this experiment is <b>{{participant.payoff_plus_participation_fee()}}</b> </p>
-<p>Thank you very much for your participation!</p>
 
-<p>We will start payments shortly. Please wait quietly at your seat until the experimenter calls your computer station number.</p>
 
+<p> Please help us to fill in a questionnaire.</p>
+
+<b><p>We will start payments after everyone finishes the questionnaire.</p></b>
+{{next_button}}
 {% endblock %}
 
 {% block styles %}

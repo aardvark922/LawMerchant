@@ -1,0 +1,41 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Questionnaire
+{% endblock %}
+
+{% block content %}
+
+    {% formfield player.age %}
+    {% formfield player.gender %}
+    {% formfield player.field_of_study %}
+    {% formfield player.country %}
+    {% formfield player.length_in_US %}
+    {% formfield player.race %}
+    {% formfield player.gpa %}
+    {% formfield player.years_at_uni %}
+    {% formfield player.num_exper %}
+	
+	In each round, what is the maximal waiting cost you are willing to pay to obtain additional 
+	{% formfield player.pay_sig1 %}
+	{% formfield player.pay_sig2 %}
+	{% formfield player.pay_sig3 %}
+	{% formfield player.pay_sig4 %}
+	
+	<br>If you are going to make another 10 rounds of decisions at a fixed position in the network, </br>
+	 <br>your payoff will be the sum of the 10 rounds (140 points for correct prediction and 40 for incorrect prediction), </br>
+	 <br>	how much would you be willing to bid to be placed at position  </br>
+	{% formfield player.bid_A %}
+	{% formfield player.bid_B %}
+	{% formfield player.bid_C %}
+	{% formfield player.bid_D %}
+	{% formfield player.bid_E %}
+
+	
+	{% formfield player.decision_process %}
+	{% formfield player.review %}
+
+    {% next_button %}
+
+{% endblock %}

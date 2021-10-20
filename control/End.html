@@ -31,12 +31,14 @@
 <p>The sum of your earnings across cycles is {{participant.payoff}}. The exchange rate is 1 point = ${{conversion_rate}}. You also receive
     {{participation_fee}} for participating our experiment. </p>
 
-<p>    In total, your payment for this experiment is <b>{{participant.payoff_plus_participation_fee()}}</b> </p>
+<p> In total, your payment for this experiment is <b>{{participant.payoff_plus_participation_fee()}}</b> </p>
 <p>Thank you very much for your participation!</p>
 
-<p>We will start payments shortly. Please wait quietly at your seat until the experimenter calls your computer station number.</p>
+<p>We will start payments shortly. Please help us to fill in a questionnaire first.</p>
+
 
 {% endblock %}
+<button class="btn btn-primary" style="display: none" id="next-button">Next</button>
 
 {% block styles %}
     <style>

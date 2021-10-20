@@ -1,0 +1,30 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    The Experiment is Over!
+{% endblock %}
+
+{% block content %}
+ <p>This ends the experiment.</p>
+
+<p>    Your payment for this experiment is <b>{{participant.payoff_plus_participation_fee()}}</b>. </p>
+<p>Thank you very much for your participation!</p>
+
+ <br>We will start payments shortly. Please wait quietly at your seat until the experimenter calls your computer station number.</br>
+    <br> When you are called, you may exit the lab with all your belongings. </br>
+	<br> You will be paid at the lab door, please bring your seat card, the instruction, the payment record, and your pen in exchange for your payment. </br>
+    <br> You can leave the calculator on the desk. </br>
+
+
+{% endblock %}
+
+{% block styles %}
+    <style>
+
+.otree-timer {
+    display: none;
+}
+    </style>
+{% endblock %}
+

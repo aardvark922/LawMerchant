@@ -51,7 +51,7 @@ Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 1&
         {{if both_query}}
             <p>Both you and your match queried the observer. Here's the query outcome:</p>
             <b> <p>Your have {{my_record}}. However, your match will receive a statement saying that
-                "Your match's record is Bad" since you rejected to give the requested amount to the <i>observer</i>.</p>
+                "Your match's record is Bad" since you rejected to give the requested amount.</p>
             <p>Your match's record is {{opponent_record}}. </p></b>
 
         {{elif no_query}}
@@ -65,7 +65,7 @@ Cycle {{ subsession.curr_super_game }}, Round {{ cycle_round_number }}, Stage 1&
         {{else}}
             <p>Only your match queried the observer. Here's the query outcome:</p>
             <b><p>Your record is {{my_record}}. However, your match will receive a statement saying that
-                "Your match's record is Bad" since you rejected to give the requested amount to the <i>observer</i>.</p></b>
+                "Your match's record is Bad" since you rejected to give the requested amount.</p></b>
 
         {{endif}}
 
