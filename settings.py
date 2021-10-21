@@ -8,20 +8,20 @@ SESSION_CONFIGS = [
      ),
     dict(
          name='honest',
-         app_sequence=['LawMerchant', 'demographics'],
+         app_sequence=['Quiz_LM','LawMerchant', 'demographics'],
          dishonesty=False,
          num_demo_participants=10,
      ),
     dict(
          name='dishonest',
-         app_sequence=['LawMerchant', 'demographics'],
+         app_sequence=['Quiz_LM','LawMerchant', 'demographics'],
          dishonesty=True,
          num_demo_participants=10,
      ),
 
     dict(
-        name='demographics',
-        app_sequence=['demographics'],
+        name='Quiz',
+        app_sequence=['Quiz_LM'],
         num_demo_participants=1,
     ),
     # dict(
@@ -58,7 +58,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     doc=""
 )
 
-PARTICIPANT_FIELDS = [ 'cycle_earning_list', 'num_super_games' ]
+PARTICIPANT_FIELDS = ['quiz_earning']
 SESSION_FIELDS = [ 'super_games_start_rounds', 'super_games_end_rounds' ]
 # ISO-639 code
 # for example: de, fr, ja, ko, zh-hans
@@ -70,8 +70,14 @@ USE_POINTS = True
 
 ROOMS = [
     dict(
-        name='LM',
-        display_name='Law_Merchant',
+        name='LM1',
+        display_name='Law_Merchant1',
+        participant_label_file='_rooms/lab.txt',
+        # use_secure_urls=True
+    ),
+    dict(
+        name='LM2',
+        display_name='Law_Merchant2',
         participant_label_file='_rooms/lab.txt',
         # use_secure_urls=True
     )

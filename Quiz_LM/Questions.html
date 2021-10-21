@@ -1,0 +1,13 @@
+{{ block title }}
+    Comprehension Test
+{{ endblock }}
+{{ block content }}
+<div align="justify">
+    <p style="color: darkred">Please answer the following 10 questions. For each correctly answered question, you will get {{Constants.quiz_payoff}}</p>
+    <p>The purpose of this comprehension test is to test your understanding of the instructions. You may refer to instructions while you are answering the questions. If you have any question, please raise your hand. An experimenter will come to you and answer your question privately. </p>
+    <p>The experiment will start once everyone has completed their comprehension test. </p>
+</div>
+    {{ formfields }}
+    {{ next_button }}
+
+{{ endblock }}

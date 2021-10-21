@@ -158,7 +158,10 @@ class Demographics(Page):
     # return 'If you were not born in the US, you cannot answer \'N/A\' for the question: \'If you were not born in the US, how long have you lived in the US?\''
 
 class Final(Page):
-    pass
+    @staticmethod
+    def vars_for_template(player: Player):
+        import math
+        return dict(payment = math.ceil(player.participant.payoff_plus_participation_fee() * 4) / 4)
 
 
 page_sequence = [
