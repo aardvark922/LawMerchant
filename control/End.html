@@ -2,12 +2,11 @@
 {% load otree static %}
 
 {% block title %}
-    The Experiment is Over!
+   Summary of earnings
 {% endblock %}
 
 {% block content %}
 
-<p>This ends Cycle {{Constants.num_super_games }} and, thus, ends the experiment.</p>
 
 <p>Below shows a summary of your earnings in each cycle</p>
 <table  border="0" cellpadding="0" cellspacing="0" width="200px" class="scrollTable">
@@ -28,17 +27,27 @@
 
 </table>
 <br>
-<p>The sum of your earnings across cycles is {{participant.payoff}}. The exchange rate is 1 point = ${{conversion_rate}}. You also receive
-    {{participation_fee}} for participating our experiment. </p>
+<p> The sum of your earnings across cycles is <b>{{cycles_earning}}</b>. In addition, you earned <b>{{quiz_earning}}</b>  from comprehension test.
+    In total, you have <b>{{participant.payoff}}</b> .
+     </p>
 
-<p> In total, your payment for this experiment is <b>{{participant.payoff_plus_participation_fee()}}</b> </p>
-<p>Thank you very much for your participation!</p>
+<p>  The exchange rate is 1 point = ${{conversion_rate}}.</p>
+<p>
+{{if rounding}}
+    After exchanging your points to dollars,
+    your earning including the <b>{{participation_fee}} </b>participation fee is <b>{{participant.payoff_plus_participation_fee()}}</b>.
+    By rounding up to the nearest $0.25, your payment for this experiment is <b style="color: darkred">${{payment}}</b>.
+    {{else}}
+     After exchanging your points to dollars and adding the <b>{{participation_fee}} </b>participation fee,
+    your payment for this experiment is <b style="color: darkred">${{payment}}</b>.
+    {{endif}}</p>
 
-<p>We will start payments shortly. Please help us to fill in a questionnaire first.</p>
 
+<b><p>We will start payments after everyone finishes the questionnaire.</p></b>
 
+<p>Click "Next" to start filling the questionaire.</p>
+{{next_button}}
 {% endblock %}
-<button class="btn btn-primary" style="display: none" id="next-button">Next</button>
 
 {% block styles %}
     <style>

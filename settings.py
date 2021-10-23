@@ -3,7 +3,7 @@ from os import environ
 SESSION_CONFIGS = [
     dict(
          name='control',
-         app_sequence=['control'],
+         app_sequence=['Quiz_control','control','demographics'],
          num_demo_participants=10,
      ),
     dict(
@@ -19,11 +19,11 @@ SESSION_CONFIGS = [
          num_demo_participants=10,
      ),
 
-    dict(
-        name='Quiz',
-        app_sequence=['Quiz_LM'],
-        num_demo_participants=1,
-    ),
+    # dict(
+    #     name='Quiz',
+    #     app_sequence=['Quiz_LM'],
+    #     num_demo_participants=1,
+    # ),
     # dict(
     #     name='Prisoner_Dilemma',
     #     app_sequence=['Prisoner_Dilemma'],

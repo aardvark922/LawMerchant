@@ -11,7 +11,7 @@ This is an indefinitely repeated Prisoner's Dilemma with random rematching every
 
 class Constants(BaseConstants):
     name_in_url = 'LM_0'
-    instructions_template = 'control/instructions.html'
+    # instructions_template = 'control/instructions.html'
     summary_template = 'control/summary.html'
     players_per_group = None
     num_super_games = 2
@@ -20,19 +20,15 @@ class Constants(BaseConstants):
     time_limit = 60 * 20
     time_limit_seconds = 60 * 20
 
-    # List of starting round for each super game
-    # super_games_start_round = [1]
-    # start_round = 1
-    # for s in super_game_duration[:-1]:
-    #     # only need to use first four lengths to calculate start round
-    #     start_round = start_round + s
-    #     # print('start round:',start_round)
-    #     super_games_start_round = super_games_start_round + [start_round]
-    #     # print('super game start round:',super_games_start_round)
-    num_rounds = 100  # sum(super_game_duration)
+    # supergame_duration = [10, 3, 21, 10, 12]
+    #for app building
+    supergame_duration = [1,2]
+
+    num_rounds = sum(supergame_duration)
+    last_round = sum(supergame_duration)  # sum(super_game_duration)
 
     # Nested groups parameters
-    super_group_size = 7
+    super_group_size = 5
     observer_num = 1
     group_size = 2
 
@@ -53,6 +49,7 @@ class Constants(BaseConstants):
 
 class Subsession(BaseSubsession):
     curr_super_game = models.IntegerField(initial=0)
+    last_round = models.IntegerField()
 
 
 class Group(BaseGroup):
@@ -88,7 +85,7 @@ class Player(BasePlayer):
         label="5. If you are an active participant, you will not know the identity of your matches.",
         choices=Constants.true_false_choices
     )
-
+    dieroll = models.IntegerField(min=1, max=100)
 
 # FUNCTIONS
 def creating_session(subsession: Subsession):
@@ -103,31 +100,49 @@ def creating_session(subsession: Subsession):
 
     if subsession.round_number == 1:
         from itertools import accumulate
+        ## generate supergame duration when creating session
+        # super_games_duration = list()
+        # for s in range(const.num_super_games):
+        #     n = 0
+        #     while True:
+        #         n += 1
+        #         next_round = choices([True, False], weights=[const.delta, 1 - const.delta], k=1)[0]
+        #         if not next_round:
+        #             break
+        #     super_games_duration.append(n)
+        #
+        # subsession.session.vars['super_games_duration'] = super_games_duration
+        # print('supergame duration:',super_games_duration)
+        # # subsession.session.vars['super_games_end_rounds'] = list(accumulate(super_games_duration))
+        # subsession.session.vars['super_games_end_rounds'] = [sum(super_games_duration[:i + 1]) for i in range(len(super_games_duration))]
+        # print('supergames end at rounds:',subsession.session.vars['super_games_end_rounds'])
+        # # subsession.session.vars['super_games_start_rounds'] = [1] + [r + 1 for r in
+        # #                                                              subsession.session.vars['super_games_end_rounds'][
+        # #                                                              1:]]
+        # subsession.session.vars['super_games_start_rounds'] = [sum(([1] + super_games_duration)[:i + 1]) for i in range(len(super_games_duration))]
+        # print('supergames start at rounds:',subsession.session.vars['super_games_start_rounds'])
+        #
+        # num_rounds_tot = sum(super_games_duration)
+        # if num_rounds_tot > const.num_rounds:
+        #     raise ValueError('Oooops, super games are longer than the num_rounds in Constants')
+        ###Use supergame durantion drawn in advance, so that every session has the same supergame details
+    super_games_duration = Constants.supergame_duration.copy()
 
-        super_games_duration = list()
-        for s in range(const.num_super_games):
-            n = 0
-            while True:
-                n += 1
-                next_round = choices([True, False], weights=[const.delta, 1 - const.delta], k=1)[0]
-                if not next_round:
-                    break
-            super_games_duration.append(n)
+    subsession.session.vars['super_games_duration'] = super_games_duration
+    print('supergame duration:', super_games_duration)
 
-        subsession.session.vars['super_games_duration'] = super_games_duration
-        print('supergame duration:',super_games_duration)
-        # subsession.session.vars['super_games_end_rounds'] = list(accumulate(super_games_duration))
-        subsession.session.vars['super_games_end_rounds'] = [sum(super_games_duration[:i + 1]) for i in range(len(super_games_duration))]
-        print('supergames end at rounds:',subsession.session.vars['super_games_end_rounds'])
-        # subsession.session.vars['super_games_start_rounds'] = [1] + [r + 1 for r in
-        #                                                              subsession.session.vars['super_games_end_rounds'][
-        #                                                              1:]]
-        subsession.session.vars['super_games_start_rounds'] = [sum(([1] + super_games_duration)[:i + 1]) for i in range(len(super_games_duration))]
-        print('supergames start at rounds:',subsession.session.vars['super_games_start_rounds'])
+    subsession.session.vars['super_games_end_rounds'] = [sum(super_games_duration[:i + 1]) for i in
+                                                             range(len(super_games_duration))]
 
-        num_rounds_tot = sum(super_games_duration)
-        if num_rounds_tot > const.num_rounds:
-            raise ValueError('Oooops, super games are longer than the num_rounds in Constants')
+    subsession.session.vars['last_round'] = subsession.session.vars['super_games_end_rounds'][
+            const.num_super_games - 1]
+    subsession.last_round = Constants.last_round
+    print('supergames end at rounds:', subsession.session.vars['super_games_end_rounds'])
+    print('the last round of the experiment is:', subsession.session.vars['last_round'])
+
+    subsession.session.vars['super_games_start_rounds'] = [sum(([1] + super_games_duration)[:i + 1]) for i in
+                                                               range(len(super_games_duration))]
+    print('supergames start at rounds:', subsession.session.vars['super_games_start_rounds'])
 
     curr_round = subsession.round_number
     for i, start in enumerate(subsession.session.vars['super_games_start_rounds']):
@@ -385,7 +400,8 @@ class ObserverResults(Page):
 class ObserverHistory(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id == 0
+        return player.pair_id == 0 and player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1!=1
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -422,26 +438,19 @@ class Results(Page):
 class EndRound(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.pair_id != 0
-
+        return player.round_number < player.session.vars['last_round'] + 1
     @staticmethod
     def vars_for_template(player: Player):
-        if player.pair_id != 0:
-            continuation_chance = int(round(Constants.delta * 100))
-            # if player.subsession.round_number in player.session.vars['super_games_end_rounds']:
-            #     print('xxxxx  supergame ends at',player.session.vars['super_games_end_rounds'])
-            #     print('xxxxx  supergame starts at',player.session.vars['super_games_start_rounds'])
-            #     print('xxxxx  supergame duration',player.session.vars['super_games_duration'])
-            #     dieroll = random.randint(continuation_chance + 1, 100)
-            # else:
-            #     dieroll = random.randint(1, continuation_chance)
-            return dict(dieroll=player.dieroll, continuation_chance=continuation_chance,
+        continuation_chance = int(round(Constants.delta * 100))
+        # if player.subsession.round_number in player.session.vars['super_games_end_rounds']:
+        #     dieroll = random.randint(continuation_chance + 1, 100)
+        # else:
+        #     dieroll = random.randint(1, continuation_chance)
+        return dict(dieroll=player.dieroll, continuation_chance=continuation_chance,
                         die_threshold_plus_one=continuation_chance + 1,
-                        cycle_round_number= player.round_number - player.session.vars['super_games_start_rounds'][
-                player.subsession.curr_super_game - 1] + 1
-            )
-            # print(get_supergroup_round_results(player))
-
+                        cycle_round_number=player.round_number - player.session.vars['super_games_start_rounds'][
+                            player.subsession.curr_super_game - 1] + 1
+                        )
 
 class EndCycle(Page):
     @staticmethod
@@ -457,16 +466,29 @@ class EndCycle(Page):
 class End(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number == player.session.vars['super_games_end_rounds'][
-            Constants.num_super_games-1]
+        return player.round_number == player.session.vars['last_round']
 
     @staticmethod
     def vars_for_template(player: Player):
+        import math
+        previous_mes= player.in_all_rounds()
+        cycles_earning=0
+        for m in previous_mes:
+            payoff=m.payoff
+            cycles_earning= cycles_earning+payoff
         return dict(last_round=sum(player.session.vars['super_games_duration']),
                     conversion_rate=player.session.config['real_world_currency_per_point'],
                     participation_fee=player.session.config['participation_fee'],
-                    cycle_earning_list=cycle_earning_list(player))
-
+                    cycle_earning_list=cycle_earning_list(player),
+                    cycles_earning=cycles_earning,
+                    quiz_earning= player.participant.quiz_earning,
+                    payment=math.ceil(player.participant.payoff_plus_participation_fee()*4)/4,
+                    rounding= (player.participant.payoff_plus_participation_fee()!= math.ceil(player.participant.payoff_plus_participation_fee()*4)/4))
+#jump to demographics after this page
+    @staticmethod
+    def app_after_this_page(player, upcoming_apps):
+        if player.round_number == player.session.vars['last_round']:
+            return upcoming_apps[0]
 
 
 page_sequence = [
@@ -478,8 +500,8 @@ page_sequence = [
     ResultsWaitPage,
     Results,
     ObserverResults,
-    ObserverHistory,
     EndRound,
+    ObserverHistory,
     EndCycle,
     End
 ]

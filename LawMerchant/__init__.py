@@ -74,53 +74,7 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     pair_id = models.IntegerField(initial=0)
-    # TODO comprehenstion test questions for two treatments
-    quiz1 = models.BooleanField(
-        label='1. If you are the observer in current cycle, '
-              'you will be an active participant in the next cycle for sure.',
-        choices=Constants.true_false_choices)
-    quiz2 = models.IntegerField(
-        label='2.  If you are an active player in current cycle, '
-                                      'when you choose Y and your partner chooses Z. What is your payoff?',
-        choices=[(1, "25"), (2, "5"), (3, "10"), (4, "30")],
-        widget=widgets.RadioSelect)
-    quiz3 = models.BooleanField(
-        label="3. The lengths of each cycle are the same.",
-        choices=Constants.true_false_choices
-    )
-    quiz4 = models.BooleanField(
-        label="4. You might will be assigned to the set with someone you have been assigned in a previous cycle.",
-        choices=Constants.true_false_choices
-    )
-    quiz5 = models.BooleanField(
-        label="5. If you are an active participant, you will not know the identity of your matches.",
-        choices=Constants.true_false_choices
-    )
-    quiz6 = models.BooleanField(
-        label="6. If you are an active player in current cycle, "
-              "you can report to the observer even if you didn’t ask for a statement about my match.",
-        choices=Constants.true_false_choices
-    )
-    quiz7 = models.BooleanField(
-        label="7. If you are an active player in current cycle, if you reject to pay a fine, "
-              "your record will become Bad for the remainder of this cycle.",
-        choices=Constants.true_false_choices
-    )
-    quiz8 = models.BooleanField(
-        label="8. If you are an active player in current cycle, "
-              "if you reject to give the requested number of points to the observer, your record will become Bad.",
-        choices=Constants.true_false_choices
-    )
-    quiz9 = models.BooleanField(
-        label=f"9. If you are the observer in current cycle, "
-              f"your sources of earning in each round are only a flat rate of {Constants.observer_payoff} and the payment from queries.",
-        choices=Constants.true_false_choices
-    )
-    quiz10 = models.BooleanField(
-        label="10. If you are the observer in current cycle, "
-              "and if an active participant accepts to pay the fine, you will change his/her record to “Bad”.",
-        choices=Constants.true_false_choices
-    )
+
     # stage 0 bribery decision
     #Observer decides whether to request any active participants.
     bribery1 = models.IntegerField(
@@ -1072,11 +1026,16 @@ class End(Page):
     @staticmethod
     def vars_for_template(player: Player):
         import math
+        previous_mes= player.in_all_rounds()
+        cycles_earning=0
+        for m in previous_mes:
+            payoff=m.payoff
+            cycles_earning= cycles_earning+payoff
         return dict(last_round=sum(player.session.vars['super_games_duration']),
                     conversion_rate=player.session.config['real_world_currency_per_point'],
                     participation_fee=player.session.config['participation_fee'],
                     cycle_earning_list=cycle_earning_list(player),
-                    cycle_earning=player.payoff,
+                    cycles_earning=cycles_earning,
                     quiz_earning= player.participant.quiz_earning,
                     payment=math.ceil(player.participant.payoff_plus_participation_fee()*4)/4,
                     rounding= (player.participant.payoff_plus_participation_fee()!= math.ceil(player.participant.payoff_plus_participation_fee()*4)/4))
