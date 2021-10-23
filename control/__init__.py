@@ -14,15 +14,15 @@ class Constants(BaseConstants):
     # instructions_template = 'control/instructions.html'
     summary_template = 'control/summary.html'
     players_per_group = None
-    num_super_games = 2
+    num_super_games = 5
     delta = 0.90  # discount factor equals to 0.90
 
     time_limit = 60 * 20
     time_limit_seconds = 60 * 20
 
-    # supergame_duration = [10, 3, 21, 10, 12]
+    supergame_duration = [10, 3, 21, 10, 12]
     #for app building
-    supergame_duration = [1,2]
+    # supergame_duration = [1,2]
 
     num_rounds = sum(supergame_duration)
     last_round = sum(supergame_duration)  # sum(super_game_duration)

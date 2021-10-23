@@ -95,7 +95,7 @@ class Player(BasePlayer):
               'you will be an active participant in the next cycle for sure.',
         choices=Constants.true_false_choices)
     quiz2 = models.IntegerField(
-        label='2.  If you are an active player in current cycle, '
+        label='2.  If you are an active player, '
               'when you choose Y and your partner chooses Z. What is your payoff?',
         choices=[(1, "25"), (2, "5"), (3, "10"), (4, "30")],
         widget=widgets.RadioSelect)
@@ -152,7 +152,9 @@ class Results(Page):
     def error_message(player: Player, values):
         for field in values:
             if getattr(player, field) != values[field]:
-                return "A field was somehow changed but this page is read-only."
+                return "Error message: You are not supposed to change your selection of choice at result page. The change of selection" \
+                       " won't change your earning from comprehension test. If you see this error message, please raise your hand." \
+                       " An experimenter will come to assist you.."
 
 class Instructions1(Page):
     pass

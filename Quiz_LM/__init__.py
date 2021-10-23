@@ -101,6 +101,31 @@ def get_quiz0_data():
             name='quiz5',
             solution=True,
             explanation="The answer is True.",
+        ),       dict(
+            name='quiz6',
+            solution=False,
+            explanation="Only when you queried the record of your match can you have the opportunity to report him/her later.",
+        ),
+        dict(
+            name='quiz7',
+            solution=True,
+            explanation="The answer is True.",
+        ),
+        dict(
+            name='quiz8H',
+            solution=False,
+            explanation="It can also be that your match accepted to pay a fine of 20 points to his/her previous match "
+                        "when he/she was reported",
+        ),
+        dict(
+            name='quiz9H',
+            solution=False,
+            explanation="The statement to send to each pair is generated according to the actual record",
+        ),
+        dict(
+            name='quiz10',
+            solution=False,
+            explanation="You don't update record for an active participant if he/she choose to pay the fine to his/her match.",
         ),
     ]
 
@@ -121,7 +146,7 @@ class Player(BasePlayer):
               'you will be an active participant in the next cycle for sure.',
         choices=Constants.true_false_choices)
     quiz2 = models.IntegerField(
-        label='2.  If you are an active player in current cycle, '
+        label='2.  If you are an active player, '
               'when you choose Y and your partner chooses Z. What is your payoff?',
         choices=[(1, "25"), (2, "5"), (3, "10"), (4, "30")],
         widget=widgets.RadioSelect)
@@ -138,27 +163,38 @@ class Player(BasePlayer):
         choices=Constants.true_false_choices
     )
     quiz6 = models.BooleanField(
-        label="6. If you are an active player in current cycle, "
-              "you can report to the observer even if you didn’t ask for a statement about my match.",
+        label="6. If you are an active participant, "
+              "you can report to the observer even if you didn’t ask for a statement about your match.",
         choices=Constants.true_false_choices
     )
     quiz7 = models.BooleanField(
-        label="7. If you are an active player in current cycle, if you reject to pay a fine, "
+        label="7. If you are an active participant and reject to pay a fine, "
               "your record will become Bad for the remainder of this cycle.",
         choices=Constants.true_false_choices
     )
+    quiz8H = models.BooleanField(
+        label="8. If you are an active participant "
+              "and receive the statement “Your match’s record is Good”, "
+              "it only means that your match has never been reported by his/her previous match.",
+        choices=Constants.true_false_choices
+    )
     quiz8 = models.BooleanField(
-        label="8. If you are an active player in current cycle, "
-              "if you reject to give the requested number of points to the observer, your record will become Bad.",
+        label="8. If you are an active participant "
+              "and reject to give the requested number of points to the observer, your record will become Bad.",
+        choices=Constants.true_false_choices
+    )
+    quiz9H = models.BooleanField(
+        label="9. If you are the observer , "
+              "you are free to choose what statement to send when you receive a query from an active participant.",
         choices=Constants.true_false_choices
     )
     quiz9 = models.BooleanField(
-        label=f"9. If you are the observer in current cycle, "
+        label=f"9. If you are the observer, "
               f"your sources of earning in each round are only a flat rate of {Constants.observer_payoff} and the payment from queries.",
         choices=Constants.true_false_choices
     )
     quiz10 = models.BooleanField(
-        label="10. If you are the observer in current cycle, "
+        label="10. If you are the observer, "
               "and if an active participant accepts to pay the fine, you will change his/her record to “Bad”.",
         choices=Constants.true_false_choices
     )
@@ -187,7 +223,7 @@ class Questions(Page):
             # comprehentions test for dishonest treatment
             return ['quiz1', 'quiz2', 'quiz3', 'quiz4', 'quiz5', 'quiz6', 'quiz7', 'quiz8', 'quiz9', 'quiz10']
         else:
-            return ['quiz1', 'quiz2', 'quiz3', 'quiz4', 'quiz5']
+            return ['quiz1', 'quiz2', 'quiz3', 'quiz4', 'quiz5', 'quiz6', 'quiz7', 'quiz8H', 'quiz9H', 'quiz10']
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -207,7 +243,7 @@ class Results(Page):
             #comprehentions test for dishonest treatment
             return ['quiz1', 'quiz2', 'quiz3', 'quiz4', 'quiz5','quiz6','quiz7','quiz8','quiz9','quiz10']
         else:
-            return ['quiz1', 'quiz2', 'quiz3', 'quiz4', 'quiz5']
+            return ['quiz1', 'quiz2', 'quiz3', 'quiz4', 'quiz5', 'quiz6', 'quiz7', 'quiz8H', 'quiz9H', 'quiz10']
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -226,7 +262,9 @@ class Results(Page):
     def error_message(player: Player, values):
         for field in values:
             if getattr(player, field) != values[field]:
-                return "A field was somehow changed but this page is read-only."
+                return "Error message: You are not supposed to change your selection of choice at result page. The change of selection" \
+                       " won't change your earning from comprehension test. If you see this error message, please raise your hand." \
+                       " An experimenter will come to assist you."
 
 class Instructions1(Page):
     pass
