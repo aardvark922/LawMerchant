@@ -19,10 +19,9 @@
     Therefore, your earning from this round is <b>{{my_earning}}</b>. </p>
 {{else}}
 <p>
-    {{if query_list}}
-    In stage 1, you received {{query_income}} as you have been queried.
+    {{if query_list and dishonesty}}
+    <p>In stage 1, you received {{query_income}} as you have been queried.</p>
     {{endif}}
-    <br>
     Your earning from this round is <b>{{my_earning}}</b>. </p>
 {{endif}}
 

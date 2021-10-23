@@ -21,10 +21,12 @@
     </style>
     <p></p>
     <p>You have correctly answered {{correct_answers}} questions. Your earning from comprehension test is <b>{{quiz_earning}}</b>. </p>
-    <p>Here are your answers along with the solutions.</p>
+    <p>Here are your answers along with the solutions. This page is <b>read-only</b>, please don't try to change your selections.</p>
+
+    <p>After reviewing your results, you may click "Start" to start the experiment.</p>
 
     {{ include Constants.form_template }}
 
-    {{ next_button }}
+    <button class="otree-btn-next btn btn-primary">Start</button>
 
 {{ endblock }}

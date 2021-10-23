@@ -23,7 +23,7 @@ class Constants(BaseConstants):
     # pre-draw random sequence of supergame for all sessions
     supergame_duration=[10,3,21,10,12]
     ##for demo testing
-    # supergame_duration =[2,1,3,1,1]
+    # supergame_duration =[2,1,2,1,1]
     ##for app building
     # supergame_duration = [1]
 
@@ -987,6 +987,7 @@ class RoundResultsOb(Page):
                 'dieroll': player.dieroll,
                 'continuation_chance': continuation_chance,
                 'die_threshold_plus_one': continuation_chance + 1,
+                'dishonesty':player.subsession.dishonesty
                 }
 #ac and ob would see the same end round outcome
 class EndRound(Page):

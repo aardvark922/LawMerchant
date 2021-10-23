@@ -184,7 +184,7 @@ class Player(BasePlayer):
         choices=Constants.true_false_choices
     )
     quiz9H = models.BooleanField(
-        label="9. If you are the observer , "
+        label="9. If you are the observer, "
               "you are free to choose what statement to send when you receive a query from an active participant.",
         choices=Constants.true_false_choices
     )
