@@ -22,7 +22,7 @@ class Constants(BaseConstants):
 
     supergame_duration = [10, 3, 21, 10, 12]
     #for app building
-    # supergame_duration = [1,2]
+    # supergame_duration = [1,2,1,1,2]
 
     num_rounds = sum(supergame_duration)
     last_round = sum(supergame_duration)  # sum(super_game_duration)
